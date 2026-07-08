@@ -6,19 +6,20 @@ export function success(status, message, data = null) {
         responseBody: {
             success: true,
             message,
-            data
-
+            data,
+            errors: null
         }
     }
 }
 
-export function failure(status, message) {
+export function failure(status, message, errors) {
     return {
         status,
         responseBody: {
             success: false,
             message,
-            data: null
+            data: null,
+            errors
         }
     }
 }
