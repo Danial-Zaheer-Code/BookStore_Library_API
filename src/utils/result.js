@@ -12,7 +12,7 @@ export function success(status, message, data = null) {
     }
 }
 
-export function failure(status, message, errors) {
+export function failure(status, message, errors = null) {
     return {
         status,
         responseBody: {
