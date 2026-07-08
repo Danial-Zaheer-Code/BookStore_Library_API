@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -10,4 +5,120 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role{
+  USER
+  ADMIN
+}
+
+model User { 
+  id    Int     @id @default(autoincrement()) 
+  name  String
+  email String  @unique
+  password String
+  role Role @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  borrowRecords BorrowRecord[]
+  reservations Reservation[]
+  reviews Review[]
+  @@map("users")
+}
+
+model Author{
+  id    Int     @id @default(autoincrement())
+  name  String
+  bio String? 
+  createdAt DateTime @default(now()) @map("created_at")
+
+  books Book[]
+  @@map("authors")
+}
+
+model Category{
+  id    Int     @id @default(autoincrement())
+  name  String @unique
+
+  books Book[]
+  @@map("categories")
+}
+
+model Book{
+  id    Int     @id @default(autoincrement())
+  title String
+  isbn String @unique
+  authorId Int @map("author_id")
+  categoryId Int @map("category_id")
+  totalCopies Int @map("total_copies")
+  availableCopies Int @map("available_copies")
+  publishedYear Int @map("published_year")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  author Author @relation(fields: [authorId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  borrowRecords BorrowRecord[]
+  reservations Reservation[]
+  reviews Review[]
+  @@map("books")
+}
+
+enum BorrowedStatus{
+  BORROWED
+  RETURNED
+  OVERDUE
+}
+
+model BorrowRecord{
+  id    Int     @id @default(autoincrement())
+  userId Int @map("user_id")
+  bookId Int @map("book_id")
+  borrowDate DateTime @default(now()) @map("borrow_date")
+  dueDate DateTime @map("due_date")
+  returnDate DateTime @map("return_date")
+  status BorrowedStatus @default(BORROWED)
+  fineAmount Decimal? @db.Decimal(10, 2) @map("fine_amount")
+  finePaid Boolean? @map("fine_paid")
+  
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@map("borrow_records")
+}
+
+
+enum ReservationStatus{
+  WAITING
+  FULFILLED
+  CANCELLED
+}
+
+model Reservation{
+  id    Int     @id @default(autoincrement())
+  userId Int @map("user_id")
+  bookId Int @map("book_id")
+  status ReservationStatus @default(WAITING)
+  queuePosition Int? @map("queue_position")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])  
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@map("reservations")
+}
+
+model Review{
+  id    Int     @id @default(autoincrement())
+  userId Int @map("user_id")
+  bookId Int @map("book_id")
+  comment String?
+  rating Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])  
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@map("reviews")
 }
