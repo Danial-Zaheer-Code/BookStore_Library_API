@@ -8,31 +8,18 @@ import * as stausCode from "../utils/statusCodes.js"
 
 export async function validateToken(req, res, next) {
     const token = req.headers.authorization.split(' ')[1];
+    const response = failure(stausCode.UNAUTHORIZED, "Unauthorized");
     if (!token) {
-        return res.status(401).json("Unauthorized");
+        return res.status(response.status).json(response.responseBody);
     }
 
     try {
         const decodedToken = jwt.verify(token, process.env.SECRET);
         req.userId = decodedToken.userId;
+        req.isAdmin = decodedToken.isAdmin
         next();
     } catch (error) {
         console.log(error);
-        return res.status(401).json("Session Expired");
-    }
-}
-
-async function validate(token){
-    if (!token) {
-        return failure(stausCode.UNAUTHORIZED, "Unauthorized");
-    }
-
-    try {
-        const decodedToken = jwt.verify(token, process.env.SECRET);
-        req.userId = decodedToken.userId;
-        next();
-    } catch (error) {
-        console.log(error);
-        return res.status(401).json("Session Expired");
+        return res.status(response.status).json(response.responseBody);
     }
 }
