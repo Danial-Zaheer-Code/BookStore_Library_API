@@ -32,3 +32,22 @@ router.post('/register',
     validateRequest,
     authController.register
 )
+
+router.post('/login',
+    check("email")
+        .exists()
+        .withMessage("Email is required")
+        .isEmail()
+        .withMessage("Invalid Email")
+        .trim()
+        .normalizeEmail(),
+    check("password")
+        .exists()
+        .withMessage('Password is required')
+        .isString()
+        .withMessage("Password must be a string")
+        .isLength({ min: 8 })
+        .withMessage("Must be at least 8 chars long"),
+    validateRequest,
+    authController.login
+)
