@@ -35,16 +35,25 @@ export async function login(user) {
             return failure(stausCode.UNAUTHORIZED, "Wrong Password")
         }
 
+        const tokenPayload = {
+            userId: existingUser.id,
+            isAdmin: existingUser.role == "ADMIN"
+        }
+
         const token = jwt.sign(
-            {
-                userId: existingUser.id,
-                isAdmin: existingUser.role == "ADMIN"
-            },
+            tokenPayload,
             process.env.SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: "15m" }
         );
 
-        return success(stausCode.OK, "Login Successfull", {token:token});
+        const refreshToken = jwt.sign(
+            tokenPayload,
+            process.env.SECRET,
+            { expiresIn: "1" }
+        );
+
+
+        return success(stausCode.OK, "Login Successfull", { token: token, refreshToken: refreshToken });
 
     } catch (error) {
         console.log(error)
