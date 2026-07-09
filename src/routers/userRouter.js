@@ -2,6 +2,7 @@ import express from "express"
 import { check } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken, validateRefreshToken } from "../middleware/tokenValidation.js";
+import { isAdmin } from "../middleware/adminValidation.js";
 import * as userController from "../controllers/userController.js";
 
 export const router = express.Router();
@@ -83,4 +84,13 @@ router.get("/profile",
     validateRequest,
     validateToken,
     userController.retrieveProfile
+)
+
+router.get("/list",
+    validateRequest,
+    validateToken,
+    isAdmin,
+    (req, res) => {
+        return res.status(200).json("Authenticated")
+    }
 )
