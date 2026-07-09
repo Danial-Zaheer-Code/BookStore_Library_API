@@ -54,7 +54,7 @@ export async function retrieveUserById(id) {
     }
 }
 
-export async function updateUser(user){
+export async function updateUser(user) {
     try {
         return await prisma.user.update({
             where: {
@@ -65,5 +65,24 @@ export async function updateUser(user){
     } catch (error) {
         console.log(error)
         throw new Error("Error while updating the user")
+    }
+}
+
+
+export async function listUsers(page, limit) {
+    try {
+        return await prisma.user.findMany({
+            take: limit,
+            skip: (page - 1) * limit,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+            }
+        });
+    } catch (error) {
+        console.log(error)
+        throw new Error("Error while listing the users")
     }
 }

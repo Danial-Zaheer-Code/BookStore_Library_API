@@ -65,11 +65,11 @@ export async function retrieveProfile(userId) {
     try {
         const user = await userDbServices.retrieveUserById(userId)
 
-        if(!user){
+        if (!user) {
             return failure(stausCode.NOT_FOUND, "User does not exists")
         }
 
-        return success(stausCode.OK, "Profile retrieved successfully", {user: user})
+        return success(stausCode.OK, "Profile retrieved successfully", { user: user })
 
     } catch (error) {
         console.log(error)
@@ -77,13 +77,13 @@ export async function retrieveProfile(userId) {
     }
 }
 
-export async function updateUser(user){
+export async function updateUser(user) {
     try {
-        if(user.data.email && await userDbServices.isEmailTaken(user.data.email)){
+        if (user.data.email && await userDbServices.isEmailTaken(user.data.email)) {
             return failure(stausCode.CONFLICT, "Email already taken")
         }
 
-        if(user.data.password){
+        if (user.data.password) {
             user.data.password = await hash(user.data.password)
         }
 
@@ -94,5 +94,17 @@ export async function updateUser(user){
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+    }
+}
+
+export async function listUsers(page, limit) {
+    try {
+        const users = await userDbServices.listUsers(page, limit)
+
+        return success(stausCode.OK, "Users retrieved successfully", {users: users})
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+
     }
 }

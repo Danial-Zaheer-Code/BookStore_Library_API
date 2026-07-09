@@ -43,3 +43,10 @@ export async function updateUser(req, res){
     return res.status(result.status).json(result.responseBody)
 
 }
+
+export async function listUsers(req, res){
+    const {page, limit} = req.body
+    const result = await userServices.listUsers(page, limit)
+
+    return res.status(result.status).json(result.responseBody)
+} 

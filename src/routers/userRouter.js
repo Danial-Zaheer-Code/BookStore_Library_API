@@ -87,10 +87,27 @@ router.get("/profile",
 )
 
 router.get("/list",
+    check("page")
+        .exists()
+        .withMessage("Page number is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .customSanitizer(value => Number(value))
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    check("limit")
+        .exists()
+        .withMessage("Limit is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .customSanitizer(value => Number(value))
+        .custom(value => value > 0)
+        .withMessage("Limit must be positive"),
+    check("name")
+        .optional()
+        .escape(),
     validateRequest,
     validateToken,
     isAdmin,
-    (req, res) => {
-        return res.status(200).json("Authenticated")
-    }
+    userController.listUsers
 )
