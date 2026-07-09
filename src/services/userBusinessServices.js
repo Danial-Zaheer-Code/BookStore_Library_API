@@ -1,11 +1,11 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import jwt from "jsonwebtoken"
 import * as userDbServices from "./userDbServices.js"
 import * as stausCode from "../utils/statusCodes.js"
 import { hash, compare } from "../utils/hashing.js"
 import { success, failure } from "../utils/result.js"
+import { createToken } from "../utils/utils.js"
 
 export async function register(user) {
     try {
@@ -40,21 +40,21 @@ export async function login(user) {
             isAdmin: existingUser.role == "ADMIN"
         }
 
-        const token = jwt.sign(
-            tokenPayload,
-            process.env.SECRET,
-            { expiresIn: "15m" }
-        );
-
-        const refreshToken = jwt.sign(
-            tokenPayload,
-            process.env.SECRET,
-            { expiresIn: "1" }
-        );
-
+        const token = createToken(tokenPayload, "15m")
+        const refreshToken = createToken(tokenPayload, "1h")
 
         return success(stausCode.OK, "Login Successfull", { token: token, refreshToken: refreshToken });
 
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+    }
+}
+
+export async function refreshToken(tokenPayload){
+    try {
+        const token = createToken(tokenPayload, "15m")
+        return success(stausCode.OK, "Token refreshed successfully", {token: token})
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")

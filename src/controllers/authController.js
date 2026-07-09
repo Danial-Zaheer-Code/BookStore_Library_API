@@ -1,5 +1,4 @@
 import * as userServices from "../services/userBusinessServices.js"
-
 export async function register(req, res){
     const user = req.body
 
@@ -14,4 +13,12 @@ export async function login(req, res) {
     const result = await userServices.login(user)
 
     return res.status(result.status).json(result.responseBody)
+}
+
+export async function refresh(req, res){    
+    const tokenPayload = {
+        userId: req.userId,
+        isAdmin: req.isAdmin
+    }
+
 }
