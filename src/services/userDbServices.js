@@ -34,3 +34,22 @@ export async function retrieveUser(email) {
         throw new Error("Error while checking if email is already taken or not")
     }
 }
+
+export async function retrieveUserById(id) {
+    try {
+        return await prisma.user.findFirst({
+            where: {
+                id: id
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        throw new Error("Error while checking if email is already taken or not")
+    }
+}

@@ -57,3 +57,9 @@ router.post("/refresh",
     authController.refresh
 
 )
+
+router.get("/profile",
+    validateRequest,
+    validateToken,
+    authController.retrieveProfile
+)

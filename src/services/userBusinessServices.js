@@ -51,10 +51,26 @@ export async function login(user) {
     }
 }
 
-export async function refreshToken(tokenPayload){
+export async function refreshToken(tokenPayload) {
     try {
         const token = createToken(tokenPayload, "15m", process.env.JWT_SECRET)
-        return success(stausCode.OK, "Token refreshed successfully", {token: token})
+        return success(stausCode.OK, "Token refreshed successfully", { token: token })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+    }
+}
+
+export async function retrieveProfile(userId) {
+    try {
+        const user = await userDbServices.retrieveUserById(userId)
+
+        if(!user){
+            return failure(stausCode.NOT_FOUND, "User does not exists")
+        }
+
+        return success(stausCode.OK, "Profile retrieved successfully", {user: user})
+
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")

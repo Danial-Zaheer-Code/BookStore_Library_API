@@ -25,3 +25,10 @@ export async function refresh(req, res){
 
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function retrieveProfile(req, res){
+    const userId = req.userId
+    const result = await userServices.retrieveProfile(userId)
+    
+    return res.status(result.status).json(result.responseBody)
+}
