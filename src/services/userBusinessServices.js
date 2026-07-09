@@ -97,9 +97,9 @@ export async function updateUser(user) {
     }
 }
 
-export async function listUsers(page, limit) {
+export async function listUsers(filters) {
     try {
-        const users = await userDbServices.listUsers(page, limit)
+        const users = await userDbServices.listUsers(filters)
 
         return success(stausCode.OK, "Users retrieved successfully", {users: users})
     } catch (error) {

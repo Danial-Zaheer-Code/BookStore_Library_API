@@ -69,11 +69,27 @@ export async function updateUser(user) {
 }
 
 
-export async function listUsers(page, limit) {
+export async function listUsers(filters) {
     try {
         return await prisma.user.findMany({
-            take: limit,
-            skip: (page - 1) * limit,
+            take: filters.limit,
+            skip: (filters.page - 1) * filters.limit,
+            where: {
+                OR: [
+                    {
+                        name: {
+                            contains: filters.search,
+                            mode: "insensitive"
+                        }
+                    },
+                    {
+                        email: {
+                            contains: filters.search,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            },
             select: {
                 id: true,
                 name: true,

@@ -103,7 +103,7 @@ router.get("/list",
         .customSanitizer(value => Number(value))
         .custom(value => value > 0)
         .withMessage("Limit must be positive"),
-    check("name")
+    check("search")
         .optional()
         .escape(),
     validateRequest,
