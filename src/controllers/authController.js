@@ -21,4 +21,7 @@ export async function refresh(req, res){
         isAdmin: req.isAdmin
     }
 
+    const result = await userServices.refreshToken(tokenPayload)
+
+    return res.status(result.status).json(result.responseBody)
 }

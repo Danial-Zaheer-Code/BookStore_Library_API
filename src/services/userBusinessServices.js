@@ -40,10 +40,10 @@ export async function login(user) {
             isAdmin: existingUser.role == "ADMIN"
         }
 
-        const token = createToken(tokenPayload, "15m")
-        const refreshToken = createToken(tokenPayload, "1h")
+        const token = createToken(tokenPayload, "15m", process.env.JWT_SECRET)
+        const refreshToken = createToken(tokenPayload, "1h", process.env.REFRSEH_JWT_SECRET)
 
-        return success(stausCode.OK, "Login Successfull", { token: token, refreshToken: refreshToken });
+        return success(stausCode.OK, "Login Successfull", { token: token, refreshToken: refreshToken, userName: existingUser.name });
 
     } catch (error) {
         console.log(error)
@@ -53,7 +53,7 @@ export async function login(user) {
 
 export async function refreshToken(tokenPayload){
     try {
-        const token = createToken(tokenPayload, "15m")
+        const token = createToken(tokenPayload, "15m", process.env.JWT_SECRET)
         return success(stausCode.OK, "Token refreshed successfully", {token: token})
     } catch (error) {
         console.log(error)

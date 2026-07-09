@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken"
 
-export async function createToken(tokenPayload, duration) {
+export function createToken(tokenPayload, duration, secret) {
     const token = jwt.sign(
         tokenPayload,
-        process.env.SECRET,
+        secret,
         { expiresIn: duration }
     );
     return token
