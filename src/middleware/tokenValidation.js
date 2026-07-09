@@ -14,7 +14,7 @@ export async function validateToken(req, res, next) {
     }
 
     try {
-        decodeToken(req, token, process.env.JWT_SECRET)
+        await decodeToken(req, token, process.env.JWT_SECRET)
         next();
     } catch (error) {
         console.log(error);
@@ -25,17 +25,13 @@ export async function validateToken(req, res, next) {
 export async function validateRefreshToken(req, res, next) {
     const token = req.body.token;
     const response = failure(stausCode.BAD_REQUEST, "Inavlid refresh token");
-    console.log(token)
-    console.log("Is token exists?")
     if (!token) {
-        console.log("NO")
         return res.status(response.status).json(response.responseBody);
     }
-    console.log("Yes")
 
     try {
         console.log("Tyring to decode token")
-        decodeToken(req, token, process.env.REFRSEH_JWT_SECRET)
+        await decodeToken(req, token, process.env.REFRSEH_JWT_SECRET)
         console.log("Token Decoded")
         next();
     } catch (error) {

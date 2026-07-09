@@ -79,6 +79,14 @@ export async function retrieveProfile(userId) {
 
 export async function updateUser(user){
     try {
+        if(user.data.email && await userDbServices.isEmailTaken(user.data.email)){
+            return failure(stausCode.CONFLICT, "Email already taken")
+        }
+
+        if(user.data.password){
+            user.data.password = await hash(user.data.password)
+        }
+
         await userDbServices.updateUser(user)
 
         return success(stausCode.OK, "Profile Updated successfully")
