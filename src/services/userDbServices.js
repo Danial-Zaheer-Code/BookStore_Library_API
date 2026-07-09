@@ -50,6 +50,20 @@ export async function retrieveUserById(id) {
         })
     } catch (error) {
         console.log(error)
-        throw new Error("Error while checking if email is already taken or not")
+        throw new Error("Error while retrieving user by id")
+    }
+}
+
+export async function updateUser(user){
+    try {
+        return await prisma.user.update({
+            where: {
+                id: user.id
+            },
+            data: user.data
+        })
+    } catch (error) {
+        console.log(error)
+        throw new Error("Error while updating the user")
     }
 }

@@ -76,3 +76,15 @@ export async function retrieveProfile(userId) {
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
     }
 }
+
+export async function updateUser(user){
+    try {
+        await userDbServices.updateUser(user)
+
+        return success(stausCode.OK, "Profile Updated successfully")
+
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+    }
+}

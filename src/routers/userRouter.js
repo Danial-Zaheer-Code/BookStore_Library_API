@@ -2,7 +2,7 @@ import express from "express"
 import { check } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken, validateRefreshToken } from "../middleware/tokenValidation.js";
-import * as authController from "../controllers/authController.js";
+import * as userController from "../controllers/userController.js";
 
 export const router = express.Router();
 
@@ -26,7 +26,7 @@ router.post('/register',
         .isLength({ min: 8 })
         .withMessage("Password must be at least 8 chars long"),
     validateRequest,
-    authController.register
+    userController.register
 )
 
 router.post('/login',
@@ -43,23 +43,44 @@ router.post('/login',
         .isLength({ min: 8 })
         .withMessage("Must be at least 8 chars long"),
     validateRequest,
-    authController.login
+    userController.login
 )
 
-router.post("/refresh", 
+router.post("/refresh-token",
     check("token")
-    .exists()
-    .withMessage("Refresh token is required")
-    .notEmpty()
-    .withMessage("Refresh token must not be empty"),
+        .exists()
+        .withMessage("Refresh token is required")
+        .notEmpty()
+        .withMessage("Refresh token must not be empty"),
     validateRequest,
     validateRefreshToken,
-    authController.refresh
+    userController.refresh
 
+)
+
+router.post("/update-profile",
+    check("email")
+        .optional()
+        .isEmail()
+        .withMessage("Invalid email")
+        .normalizeEmail(),
+    check("name")
+        .optional()
+        .notEmpty()
+        .withMessage("Name must not be empty")
+        .trim()
+        .escape(),
+    check("password")
+        .optional()
+        .isLength({ min: 8 })
+        .withMessage("Password must be at least 8 chars long"),
+    validateRequest,
+    validateToken,
+    userController.updateUser
 )
 
 router.get("/profile",
     validateRequest,
     validateToken,
-    authController.retrieveProfile
+    userController.retrieveProfile
 )

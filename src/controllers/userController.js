@@ -32,3 +32,14 @@ export async function retrieveProfile(req, res){
     
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function updateUser(req, res){
+    const user = {}
+    user.id = req.userId
+    user.data = req.body ?? {}
+
+    const result = await userServices.updateUser(user)
+
+    return res.status(result.status).json(result.responseBody)
+
+}
