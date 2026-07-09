@@ -50,3 +50,17 @@ export async function listUsers(req, res){
 
     return res.status(result.status).json(result.responseBody)
 } 
+
+export async function updateRole(req, res) {
+    const {userId, role} = req.body
+
+    const user = {
+        id: userId,
+        data: {
+            role: role
+        }
+    }
+
+    const result = await userServices.updateRole(user, req.userId)
+    return res.status(result.status).json(result.responseBody)
+}

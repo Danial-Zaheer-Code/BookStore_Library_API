@@ -80,6 +80,24 @@ router.post("/update-profile",
     userController.updateUser
 )
 
+router.post("/update-role",
+    check("userId")
+        .exists()
+        .withMessage("User Id is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .customSanitizer(value => Number(value)),
+    check("role")
+        .exists()
+        .withMessage("Role is required")
+        .custom(role => role == "USER" || role == "ADMIN")
+        .withMessage("Invalid role"),
+    validateRequest,
+    validateToken,
+    isAdmin,
+    userController.updateRole
+)
+
 router.get("/profile",
     validateRequest,
     validateToken,

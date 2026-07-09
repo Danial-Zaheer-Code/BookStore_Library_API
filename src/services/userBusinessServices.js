@@ -79,8 +79,12 @@ export async function retrieveProfile(userId) {
 
 export async function updateUser(user) {
     try {
+        if (!await userDbServices.isUserExists(user.userId)) {
+            return failure(stausCode.NOT_FOUND, "User does not exists")
+        }
+
         if (user.data.email && await userDbServices.isEmailTaken(user.data.email)) {
-            return failure(stausCode.CONFLICT, "Email already taken")
+            return failure(stausCode.CONFLICT, "Email already in use")
         }
 
         if (user.data.password) {
@@ -101,10 +105,29 @@ export async function listUsers(filters) {
     try {
         const users = await userDbServices.listUsers(filters)
 
-        return success(stausCode.OK, "Users retrieved successfully", {users: users})
+        return success(stausCode.OK, "Users retrieved successfully", { users: users })
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
+    }
+}
 
+export async function updateRole(user, adminId) {
+    console.log(user)
+    if (user.userId == adminId) {
+        return failure(stausCode.FORBIDDEN, "You can't change your own role")
+    }
+
+    if(!await userDbServices.isUserExists(user.userId)){
+        return failure(stausCode.NOT_FOUND, "The user does not exists")
+    }
+
+    try {
+        await userDbServices.updateUser(user)
+
+        return success(stausCode.OK, "Role updated successfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong try again later")
     }
 }

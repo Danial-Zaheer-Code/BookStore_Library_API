@@ -35,6 +35,16 @@ export async function retrieveUser(email) {
     }
 }
 
+export async function isUserExists(id) {
+    try {
+        const user = await retrieveUserById(id)
+        return user != null
+    } catch (error) {
+        console.log(error)
+        throw new Error("Error while checking for a user existence")
+    }
+}
+
 export async function retrieveUserById(id) {
     try {
         return await prisma.user.findFirst({
@@ -78,13 +88,13 @@ export async function listUsers(filters) {
                 OR: [
                     {
                         name: {
-                            contains: filters.search,
+                            contains: filters.search ?? '',
                             mode: "insensitive"
                         }
                     },
                     {
                         email: {
-                            contains: filters.search,
+                            contains: filters.search ?? '',
                             mode: "insensitive"
                         }
                     }
