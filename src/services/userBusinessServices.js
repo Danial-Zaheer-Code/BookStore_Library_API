@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 
-import * as userDbServices from "./userDbServices.js"
+import * as userRepository from "../repository/userRepository.js"
 import * as stausCode from "../utils/statusCodes.js"
 import { hash, compare } from "../utils/hashing.js"
 import { success, failure } from "../utils/result.js"
@@ -9,12 +9,12 @@ import { createToken } from "../utils/utils.js"
 
 export async function register(user) {
     try {
-        if (await userDbServices.isEmailTaken(user.email)) {
+        if (await userRepository.isEmailTaken(user.email)) {
             return failure(stausCode.CONFLICT, "User already exists")
         }
 
         user.password = await hash(user.password);
-        await userDbServices.createUser(user)
+        await userRepository.createUser(user)
         return success(stausCode.OK, "User created successfully")
     } catch (error) {
         console.log(error)
@@ -24,7 +24,7 @@ export async function register(user) {
 
 export async function login(user) {
     try {
-        const existingUser = await userDbServices.retrieveUser(user.email);
+        const existingUser = await userRepository.retrieveUser(user.email);
         if (!existingUser) {
             return failure(stausCode.NOT_FOUND, "User does not exists")
         }
@@ -63,7 +63,7 @@ export async function refreshToken(tokenPayload) {
 
 export async function retrieveProfile(userId) {
     try {
-        const user = await userDbServices.retrieveUserById(userId)
+        const user = await userRepository.retrieveUserById(userId)
 
         if (!user) {
             return failure(stausCode.NOT_FOUND, "User does not exists")
@@ -79,11 +79,11 @@ export async function retrieveProfile(userId) {
 
 export async function updateUser(user) {
     try {
-        if (!await userDbServices.isUserExists(user.userId)) {
+        if (!await userRepository.isUserExists(user.userId)) {
             return failure(stausCode.NOT_FOUND, "User does not exists")
         }
 
-        if (user.data.email && await userDbServices.isEmailTaken(user.data.email)) {
+        if (user.data.email && await userRepository.isEmailTaken(user.data.email)) {
             return failure(stausCode.CONFLICT, "Email already in use")
         }
 
@@ -91,7 +91,7 @@ export async function updateUser(user) {
             user.data.password = await hash(user.data.password)
         }
 
-        await userDbServices.updateUser(user)
+        await userRepository.updateUser(user)
 
         return success(stausCode.OK, "Profile Updated successfully")
 
@@ -103,7 +103,7 @@ export async function updateUser(user) {
 
 export async function listUsers(filters) {
     try {
-        const users = await userDbServices.listUsers(filters)
+        const users = await userRepository.listUsers(filters)
 
         return success(stausCode.OK, "Users retrieved successfully", { users: users })
     } catch (error) {
@@ -118,12 +118,12 @@ export async function updateRole(user, adminId) {
         return failure(stausCode.FORBIDDEN, "You can't change your own role")
     }
 
-    if(!await userDbServices.isUserExists(user.userId)){
+    if(!await userRepository.isUserExists(user.userId)){
         return failure(stausCode.NOT_FOUND, "The user does not exists")
     }
 
     try {
-        await userDbServices.updateUser(user)
+        await userRepository.updateUser(user)
 
         return success(stausCode.OK, "Role updated successfully")
     } catch (error) {
