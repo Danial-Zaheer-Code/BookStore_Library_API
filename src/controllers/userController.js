@@ -1,5 +1,5 @@
 import * as userServices from "../services/userServices.js"
-export async function register(req, res){
+export async function register(req, res) {
     const user = req.body
 
     const result = await userServices.register(user);
@@ -15,7 +15,7 @@ export async function login(req, res) {
     return res.status(result.status).json(result.responseBody)
 }
 
-export async function refresh(req, res){    
+export async function refresh(req, res) {
     const tokenPayload = {
         userId: req.userId,
         isAdmin: req.isAdmin
@@ -26,17 +26,18 @@ export async function refresh(req, res){
     return res.status(result.status).json(result.responseBody)
 }
 
-export async function retrieveProfile(req, res){
+export async function retrieveProfile(req, res) {
     const userId = req.userId
     const result = await userServices.retrieveProfile(userId)
-    
+
     return res.status(result.status).json(result.responseBody)
 }
 
-export async function updateUser(req, res){
-    const user = {}
-    user.id = req.userId
-    user.data = req.body ?? {}
+export async function updateUser(req, res) {
+    const user = {
+        id: req.userId,
+        data: req.body ?? {}
+    }
 
     const result = await userServices.updateUser(user)
 
@@ -44,15 +45,15 @@ export async function updateUser(req, res){
 
 }
 
-export async function listUsers(req, res){
+export async function listUsers(req, res) {
     const filters = req.body
     const result = await userServices.listUsers(filters)
 
     return res.status(result.status).json(result.responseBody)
-} 
+}
 
 export async function updateRole(req, res) {
-    const {userId, role} = req.body
+    const { userId, role } = req.body
 
     const user = {
         id: userId,
