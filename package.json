@@ -1,7 +1,6 @@
 {
   "devDependencies": {
     "dotenv": "^17.4.2",
-    "jest": "^30.4.2",
     "prisma": "^7.8.0"
   },
   "dependencies": {
@@ -15,7 +14,6 @@
     "pg": "^8.22.0"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "type": "module"
 }
