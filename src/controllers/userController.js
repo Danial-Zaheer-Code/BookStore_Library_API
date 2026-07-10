@@ -46,7 +46,7 @@ export async function updateUser(req, res) {
 }
 
 export async function listUsers(req, res) {
-    const filters = req.body
+    const filters = req.query
     const result = await userServices.listUsers(filters)
 
     return res.status(result.status).json(result.responseBody)
