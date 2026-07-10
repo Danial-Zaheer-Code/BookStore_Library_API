@@ -1,4 +1,4 @@
-import * as userServices from "../services/userBusinessServices.js"
+import * as userServices from "../services/userServices.js"
 export async function register(req, res){
     const user = req.body
 
