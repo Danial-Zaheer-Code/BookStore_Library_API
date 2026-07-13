@@ -7,3 +7,9 @@ export async function createCategory(req, res){
 
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function listCategories(req, res){
+    const result = await categoryServices.listCategories()
+
+    return res.status(result.status).json(result.responseBody)
+}

@@ -18,3 +18,8 @@ router.post("/create",
     validateRequest,
     categoryController.createCategory
 )
+
+router.get("/list",
+    validateToken,
+    categoryController.listCategories
+)
