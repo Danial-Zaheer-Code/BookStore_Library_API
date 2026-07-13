@@ -7,14 +7,14 @@ import * as authorController from "../controllers/authorController.js";
 
 export const router = express.Router();
 
-router.post("/create", 
+router.post("/create",
+    validateToken,
+    isAdmin, 
     check("name")
     .exists()
     .withMessage("Author name is required")
     .notEmpty()
     .withMessage("Author name must not be empty"),
     validateRequest,
-    validateToken,
-    isAdmin,
     authorController.createAuthor
 )
