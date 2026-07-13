@@ -19,6 +19,25 @@ router.post("/create",
     categoryController.createCategory
 )
 
+router.post("/update",
+    validateToken,
+    isAdmin,
+    body("categoryId")
+    .exists()
+    .withMessage("Category Id is required")
+    .notEmpty()
+    .withMessage("Category Id can't be empty")
+    .isNumeric()
+    .withMessage("Category Id must be a number")
+    .toInt(),
+    body("name")
+    .optional()
+    .notEmpty()
+    .withMessage("Name can't be empty"),
+    validateRequest,
+    categoryController.updateCategory
+)
+
 router.get("/list",
     validateToken,
     categoryController.listCategories

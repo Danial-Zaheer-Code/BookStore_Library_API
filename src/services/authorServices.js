@@ -91,7 +91,7 @@ export async function updateAuthor(author) {
 
 export async function deleteAuthor(authorId) {
     try {
-        const author = await tx.author.findUnique({
+        const author = await prisma.author.findUnique({
             where: { id: authorId },
             include: { _count: { select: { books: true } } }
         });
@@ -105,7 +105,7 @@ export async function deleteAuthor(authorId) {
             return failure(stausCode.CONFLICT, "Author has books linked to him");
         }
 
-        await tx.author.delete({
+        await prisma.author.delete({
             where: { id: authorId }
         });
 

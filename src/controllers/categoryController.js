@@ -13,3 +13,17 @@ export async function listCategories(req, res){
 
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function updateCategory(req, res){
+    const {categoryId, name} = req.body
+    const category = {
+        id: categoryId,
+        data: {
+            name: name
+        }
+    }
+
+    const result = await categoryServices.updateCategory(category)
+
+    return res.status(result.status).json(result.responseBody)
+}
