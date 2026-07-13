@@ -14,7 +14,8 @@ router.post("/create",
     .exists()
     .withMessage("Author name is required")
     .notEmpty()
-    .withMessage("Author name must not be empty"),
+    .withMessage("Author name must not be empty")
+    .escape(),
     validateRequest,
     authorController.createAuthor
 )
@@ -52,4 +53,24 @@ router.get("/details",
     .toInt(),
     validateRequest,
     authorController.retrieveAuthorDetails
+)
+
+router.post("/update",
+    validateToken,
+    isAdmin,
+    body("authorId")
+    .exists()
+    .withMessage("Author id is required")
+    .isNumeric()
+    .withMessage("Author id must be a number")
+    .toInt(),
+    body("name")
+    .optional()
+    .notEmpty()
+    .withMessage("Name can't be empty")
+    .escape(),
+    body("bio")
+    .escape(),
+    validateRequest,
+    authorController.updateAuthor
 )

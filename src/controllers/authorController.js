@@ -22,5 +22,17 @@ export async function retrieveAuthorDetails(req, res){
     const result = await authorServices.retriveAuthorDetails(authorId)
 
     return res.status(result.status).json(result.responseBody)
+}
 
+export async function updateAuthor(req, res) {
+    const {authorId, name, bio} = req.body;
+    const author = {
+        id: authorId,
+        data:{
+            name: name,
+            bio: bio
+        }
+    }
+    const result = await authorServices.updateAuthor(author)
+    return res.status(result.status).json(result.responseBody)
 }
