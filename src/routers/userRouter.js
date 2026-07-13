@@ -1,5 +1,5 @@
 import express from "express"
-import { check } from "express-validator"
+import { check, query } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken, validateRefreshToken } from "../middleware/tokenValidation.js";
 import { isAdmin } from "../middleware/adminValidation.js";
@@ -60,6 +60,7 @@ router.post("/refresh-token",
 )
 
 router.post("/update-profile",
+    validateToken,
     check("email")
         .optional()
         .isEmail()
@@ -76,11 +77,12 @@ router.post("/update-profile",
         .isLength({ min: 8 })
         .withMessage("Password must be at least 8 chars long"),
     validateRequest,
-    validateToken,
     userController.updateUser
 )
 
 router.post("/update-role",
+    validateToken,
+    isAdmin,
     check("userId")
         .exists()
         .withMessage("User Id is required")
@@ -93,39 +95,36 @@ router.post("/update-role",
         .custom(role => role == "USER" || role == "ADMIN")
         .withMessage("Invalid role"),
     validateRequest,
-    validateToken,
-    isAdmin,
+
     userController.updateRole
 )
 
 router.get("/profile",
-    validateRequest,
     validateToken,
+    validateRequest,
     userController.retrieveProfile
 )
 
 router.get("/list",
-    check("page")
+    validateToken,
+    isAdmin,
+    query("page")
         .exists()
         .withMessage("Page number is required")
         .isNumeric()
         .withMessage("Not a number")
-        .customSanitizer(value => Number(value))
         .custom(value => value > 0)
         .withMessage("Page Number must be positive"),
-    check("limit")
+    query("limit")
         .exists()
         .withMessage("Limit is required")
         .isNumeric()
         .withMessage("Not a number")
-        .customSanitizer(value => Number(value))
         .custom(value => value > 0)
-        .withMessage("Limit must be positive"),
-    check("search")
+        .withMessage("Page Number must be positive"),
+    query("search")
         .optional()
         .escape(),
     validateRequest,
-    validateToken,
-    isAdmin,
     userController.listUsers
 )
