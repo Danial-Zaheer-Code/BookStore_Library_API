@@ -1,5 +1,5 @@
 import express from "express"
-import { check, query } from "express-validator"
+import { query, body } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken, validateRefreshToken } from "../middleware/tokenValidation.js";
 import { isAdmin } from "../middleware/adminValidation.js";
@@ -8,20 +8,20 @@ import * as userController from "../controllers/userController.js";
 export const router = express.Router();
 
 router.post('/register',
-    check("email")
+    body("email")
         .exists()
         .withMessage("Email is required")
         .isEmail()
         .withMessage("Invalid email")
         .normalizeEmail(),
-    check("name")
+    body("name")
         .exists()
         .withMessage("Name is required")
         .notEmpty()
         .withMessage("Name must not be empty")
         .trim()
         .escape(),
-    check("password")
+    body("password")
         .exists()
         .withMessage("Password is required")
         .isLength({ min: 8 })
@@ -31,14 +31,14 @@ router.post('/register',
 )
 
 router.post('/login',
-    check("email")
+    body("email")
         .exists()
         .withMessage("Email is required")
         .isEmail()
         .withMessage("Invalid email")
         .trim()
         .normalizeEmail(),
-    check("password")
+    body("password")
         .exists()
         .withMessage('Password is required')
         .isLength({ min: 8 })
@@ -48,7 +48,7 @@ router.post('/login',
 )
 
 router.post("/refresh-token",
-    check("token")
+    body("token")
         .exists()
         .withMessage("Refresh token is required")
         .notEmpty()
@@ -61,18 +61,18 @@ router.post("/refresh-token",
 
 router.post("/update-profile",
     validateToken,
-    check("email")
+    body("email")
         .optional()
         .isEmail()
         .withMessage("Invalid email")
         .normalizeEmail(),
-    check("name")
+    body("name")
         .optional()
         .notEmpty()
         .withMessage("Name must not be empty")
         .trim()
         .escape(),
-    check("password")
+    body("password")
         .optional()
         .isLength({ min: 8 })
         .withMessage("Password must be at least 8 chars long"),
@@ -83,13 +83,13 @@ router.post("/update-profile",
 router.post("/update-role",
     validateToken,
     isAdmin,
-    check("userId")
+    body("userId")
         .exists()
         .withMessage("User Id is required")
         .isNumeric()
         .withMessage("Not a number")
         .customSanitizer(value => Number(value)),
-    check("role")
+    body("role")
         .exists()
         .withMessage("Role is required")
         .custom(role => role == "USER" || role == "ADMIN")
