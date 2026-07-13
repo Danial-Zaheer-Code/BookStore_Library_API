@@ -91,27 +91,25 @@ export async function updateAuthor(author) {
 
 export async function deleteAuthor(authorId) {
     try {
-        return await prisma.$transaction(async (tx) => {
-            const author = await tx.author.findUnique({
-                where: { id: authorId },
-                include: { _count: { select: { books: true } } }
-            });
-
-            
-            if (!author) {
-                return failure(stausCode.NOT_FOUND, "Author does not exists")
-            }
-
-            if (author._count.books > 0) {
-                return failure(stausCode.CONFLICT, "Author has books linked to him");
-            }
-
-            await tx.author.delete({
-                where: { id: authorId }
-            });
-
-            return success(stausCode.OK, "Author deleted successfully")
+        const author = await tx.author.findUnique({
+            where: { id: authorId },
+            include: { _count: { select: { books: true } } }
         });
+
+
+        if (!author) {
+            return failure(stausCode.NOT_FOUND, "Author does not exists")
+        }
+
+        if (author._count.books > 0) {
+            return failure(stausCode.CONFLICT, "Author has books linked to him");
+        }
+
+        await tx.author.delete({
+            where: { id: authorId }
+        });
+
+        return success(stausCode.OK, "Author deleted successfully")
 
         return res.status(200).json({ message: "Deleted", result });
     } catch (error) {
