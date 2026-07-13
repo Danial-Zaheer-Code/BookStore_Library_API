@@ -87,3 +87,29 @@ export async function updateCategory(category) {
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }
+
+export async function deleteCategory(categoryId) {
+    try {
+        const category = await prisma.category.findUnique({
+            where: { id: categoryId },
+            include: { _count: { select: { books: true } } }
+        });
+      
+        if (!category) {
+            return failure(stausCode.NOT_FOUND, "Category does not exist")
+        }
+
+        if (category._count.books > 0) {
+            return failure(stausCode.CONFLICT, "Category has books linked to it")
+        }
+
+        await prisma.category.delete({
+            where: { id: categoryId }
+        })
+
+        return success(stausCode.OK, "Category deleted successfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}

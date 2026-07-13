@@ -27,3 +27,9 @@ export async function updateCategory(req, res){
 
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function deleteCategory(req, res){
+    const categoryId = req.body.categoryId
+    const result = await categoryServices.deleteCategory(categoryId)
+    return res.status(result.status).json(result.responseBody)
+}

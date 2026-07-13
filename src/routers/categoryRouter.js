@@ -38,6 +38,21 @@ router.post("/update",
     categoryController.updateCategory
 )
 
+router.post("/delete",
+    validateToken,
+    isAdmin,
+    body("categoryId")
+    .exists()
+    .withMessage("Category Id is required")
+    .notEmpty()
+    .withMessage("Category Id can't be empty")
+    .isNumeric()
+    .withMessage("Category Id must be a number")
+    .toInt(),
+    validateRequest,
+    categoryController.deleteCategory
+)
+
 router.get("/list",
     validateToken,
     categoryController.listCategories
