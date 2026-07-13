@@ -7,8 +7,7 @@ export async function createAuthor(author) {
         await prisma.author.create({
             data: author
         })
-
-        return success(stausCode.OK, "AUthor created successfully")
+        return success(stausCode.OK, "Author created successfully")
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
