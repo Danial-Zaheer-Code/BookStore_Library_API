@@ -36,3 +36,10 @@ export async function updateAuthor(req, res) {
     const result = await authorServices.updateAuthor(author)
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function deleteAuthor(req, res){
+    const {authorId} = req.body
+    const result = await authorServices.deleteAuthor(authorId)
+    return res.status(result.status).json(result.responseBody)
+
+}

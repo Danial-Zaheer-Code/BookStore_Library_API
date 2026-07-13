@@ -1,5 +1,5 @@
 import express from "express"
-import { body, query } from "express-validator"
+import { body, check, query } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken } from "../middleware/tokenValidation.js";
 import { isAdmin } from "../middleware/adminValidation.js";
@@ -18,6 +18,39 @@ router.post("/create",
     .escape(),
     validateRequest,
     authorController.createAuthor
+)
+
+router.post("/update",
+    validateToken,
+    isAdmin,
+    body("authorId")
+    .exists()
+    .withMessage("Author id is required")
+    .isNumeric()
+    .withMessage("Author id must be a number")
+    .toInt(),
+    body("name")
+    .optional()
+    .notEmpty()
+    .withMessage("Name can't be empty")
+    .escape(),
+    body("bio")
+    .escape(),
+    validateRequest,
+    authorController.updateAuthor
+)
+
+router.post("/delete", 
+    validateToken,
+    isAdmin,
+    body("authorId")
+    .exists()
+    .withMessage("Author id is required")
+    .isNumeric()
+    .withMessage("Author id must be a number")
+    .toInt(),
+    validateRequest,
+    authorController.deleteAuthor
 )
 
 router.get("/list",
@@ -53,24 +86,4 @@ router.get("/details",
     .toInt(),
     validateRequest,
     authorController.retrieveAuthorDetails
-)
-
-router.post("/update",
-    validateToken,
-    isAdmin,
-    body("authorId")
-    .exists()
-    .withMessage("Author id is required")
-    .isNumeric()
-    .withMessage("Author id must be a number")
-    .toInt(),
-    body("name")
-    .optional()
-    .notEmpty()
-    .withMessage("Name can't be empty")
-    .escape(),
-    body("bio")
-    .escape(),
-    validateRequest,
-    authorController.updateAuthor
 )

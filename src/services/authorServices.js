@@ -58,39 +58,69 @@ export async function retriveAuthorDetails(authorId) {
             }
         })
 
-        if(!author){
+        if (!author) {
             return failure(stausCode.NOT_FOUND, "Author does not exists")
         }
 
-        return success(stausCode.OK, "Retrieved Successfully", {author: author})
+        return success(stausCode.OK, "Retrieved Successfully", { author: author })
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }
 
-export async function updateAuthor(author){
+export async function updateAuthor(author) {
     try {
-        if(!await isAuthorExists(author.id)){
+        if (!await isAuthorExists(author.id)) {
             return failure(stausCode.NOT_FOUND, "Author does not exists")
         }
-        console.log(author)
-        prisma.author.update({
+
+        await prisma.author.update({
             where: {
                 id: author.id
             },
             data: author.data
         })
 
-        return success(stausCode.OK, "User updated successfully")
+        return success(stausCode.OK, "Author updated successfully")
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }
 
+export async function deleteAuthor(authorId) {
+    try {
+        return await prisma.$transaction(async (tx) => {
+            const author = await tx.author.findUnique({
+                where: { id: authorId },
+                include: { _count: { select: { books: true } } }
+            });
 
-async function isAuthorExists(authorId){
+            
+            if (!author) {
+                return failure(stausCode.NOT_FOUND, "Author does not exists")
+            }
+
+            if (author._count.books > 0) {
+                return failure(stausCode.CONFLICT, "Author has books linked to him");
+            }
+
+            await tx.author.delete({
+                where: { id: authorId }
+            });
+
+            return success(stausCode.OK, "Author deleted successfully")
+        });
+
+        return res.status(200).json({ message: "Deleted", result });
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+async function isAuthorExists(authorId) {
     const author = await prisma.author.findUnique({
         where: {
             id: authorId
