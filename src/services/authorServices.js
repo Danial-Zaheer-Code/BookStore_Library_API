@@ -37,3 +37,35 @@ export async function listAuthors(filters) {
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }
+
+export async function retriveAuthorDetails(authorId) {
+    try {
+        const author = await prisma.author.findUnique({
+            where: {
+                id: authorId
+            },
+            select: {
+                id: true,
+                name: true,
+                bio: true,
+                books: {
+                    select: {
+                        id: true,
+                        title: true,
+                        isbn: true
+                    }
+                }
+            }
+        })
+
+        if(!author){
+            return failure(stausCode.NOT_FOUND, "Author does not exists")
+        }
+
+        return success(stausCode.OK, "Retrieved Successfully", {author: author})
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+
+    }
+}

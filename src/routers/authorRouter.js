@@ -41,3 +41,15 @@ router.get("/list",
     validateRequest,
     authorController.listAuthors
 )
+
+router.get("/details",
+    validateToken,
+    body("authorId")
+    .exists()
+    .withMessage("Author id is required")
+    .isNumeric()
+    .withMessage("Author id must be a number")
+    .toInt(),
+    validateRequest,
+    authorController.retrieveAuthorDetails
+)

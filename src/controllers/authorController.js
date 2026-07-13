@@ -16,3 +16,11 @@ export async function listAuthors(req, res) {
 
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function retrieveAuthorDetails(req, res){
+    const {authorId} = req.body
+    const result = await authorServices.retriveAuthorDetails(authorId)
+
+    return res.status(result.status).json(result.responseBody)
+
+}
