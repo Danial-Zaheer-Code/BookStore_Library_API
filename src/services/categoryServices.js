@@ -60,13 +60,7 @@ export async function listCategories() {
 
 export async function updateCategory(category) {
     try {
-        const existingCategory = await prisma.category.findUnique({
-            where: {
-                id: category.id
-            }
-        })
-
-        if (!existingCategory) {
+        if (!await isCategoryExists(category.id)) {
             return failure(stausCode.NOT_FOUND, "Category does not exist")
         }
 
@@ -86,6 +80,19 @@ export async function updateCategory(category) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
+}
+
+export async function isCategoryExists(categoryId) {
+    const category = await prisma.category.findUnique({
+        where: {
+            id: category.id
+        },
+        select: {
+            id: true
+        }
+    })
+
+    return category != null
 }
 
 export async function deleteCategory(categoryId) {
@@ -134,11 +141,11 @@ export async function retrieveCategoryDetails(categoryId, filters) {
             }
         });
 
-        if(!category){
+        if (!category) {
             return failure(stausCode.NOT_FOUND, "Category does not found")
         }
 
-        return success(stausCode.OK, "Retrieved Successfully", {category: category})
+        return success(stausCode.OK, "Retrieved Successfully", { category: category })
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
