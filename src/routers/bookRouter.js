@@ -58,6 +58,51 @@ router.post("/create",
     bookController.createBook
 )
 
+router.post("/update",
+    validateToken,
+    isAdmin,
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    body("title")
+        .optional()
+        .notEmpty()
+        .withMessage("Author name must not be empty")
+        .escape(),
+    body("isbn")
+        .optional()
+        .notEmpty()
+        .withMessage("ISBN must not be empty")
+        .escape(),
+    body("authorId")
+        .optional().isNumeric()
+        .withMessage("Author id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Author id must be positive"),
+    body("categoryId")
+        .optional()
+        .isNumeric()
+        .withMessage("Category id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Category id must be positive"),
+    body("publishedYear")
+        .optional()
+        .isNumeric()
+        .withMessage("Published year must be a number")
+        .toInt()
+        .custom(value => value > 0 && value <= new Date().getFullYear())
+        .withMessage("Published year must be posititve and not greater then current year"),
+    validateRequest,
+    bookController.updateBook
+)
+
 router.get("/details",
     validateToken,
     body("bookId")

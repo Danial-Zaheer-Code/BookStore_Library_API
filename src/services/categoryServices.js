@@ -85,7 +85,7 @@ export async function updateCategory(category) {
 export async function isCategoryExists(categoryId) {
     const category = await prisma.category.findUnique({
         where: {
-            id: category.id
+            id: categoryId
         },
         select: {
             id: true

@@ -29,14 +29,61 @@ export async function createBook(book) {
     }
 }
 
+
+
+export async function updateBook(book) {
+    try {
+        if(!await isBookExists(book.id)){
+            return failure(stausCode.NOT_FOUND, "The book does not exists")
+        }
+
+        if (book.data.authorId && !await isAuthorExists(book.data.authorId)) {
+            return failure(stausCode.NOT_FOUND, "Author does not exists")
+        }
+
+        if (book.data.categoryId && !await isCategoryExists(book.data.categoryId)) {
+            return failure(stausCode.NOT_FOUND, "Category does not exists")
+        }
+        const existingBook = book.data.isbn ? await retrieveBookByISBN(book.data.isbn) : null
+        if(existingBook && existingBook.id != book.id){
+            return failure(stausCode.CONFLICT, "New ISBN already taken by another book")
+        }
+
+        await prisma.book.update({
+            where: {id: book.id},
+            data: book.data
+        })
+
+        return success(stausCode.OK, "Book Updated successfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+
+
 async function isISBNTaken(isbn) {
-    const book = await prisma.book.findUnique({
+    const book = await retrieveBookByISBN(isbn)
+
+    return book != null
+}
+
+async function retrieveBookByISBN(isbn){
+    return await prisma.book.findUnique({
         where: {
             isbn: isbn
         },
         select: {
             id: true
         }
+    })
+}
+
+async function isBookExists(bookId) {
+    const book = await prisma.book.findUnique({
+        where: { id: bookId },
+        select: { id: true }
     })
 
     return book != null
