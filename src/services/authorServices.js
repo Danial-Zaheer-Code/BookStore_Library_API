@@ -52,7 +52,6 @@ export async function retriveAuthorDetails(authorId) {
                     select: {
                         id: true,
                         title: true,
-                        isbn: true
                     }
                 }
             }
