@@ -70,17 +70,8 @@ export async function retrieveBookDetails(bookId) {
         if (!book) {
             return failure(stausCode.NOT_FOUND, "Book does not exists")
         }
-
-        const reviewStats = await prisma.review.aggregate({
-            where: {
-                bookId: bookId
-            },
-            _avg: {
-                rating: true
-            }
-        })
-
-        book.averageRating = reviewStats._avg.rating ?? 0;
+        
+        book.averageRating = calculateAverageRating(bookId)
 
         return success(stausCode.OK, "Retrieved SUccessfully", { book: book })
     } catch (error) {
@@ -89,7 +80,20 @@ export async function retrieveBookDetails(bookId) {
     }
 }
 
-export async function deleteBook(bookId){
+async function calculateAverageRating(bookId) {
+    const reviewStats = await prisma.review.aggregate({
+        where: {
+            bookId: bookId
+        },
+        _avg: {
+            rating: true
+        }
+    })
+
+    return reviewStats._avg.rating ?? 0;
+}
+
+export async function deleteBook(bookId) {
     try {
         const book = await prisma.book.findUnique({
             where: {
@@ -118,15 +122,15 @@ export async function deleteBook(bookId){
             },
         })
 
-        if(!book){
+        if (!book) {
             return failure(stausCode.NOT_FOUND, "The book does not exists")
         }
 
-        if(book.borrowRecords.length > 0){
+        if (book.borrowRecords.length > 0) {
             return failure(stausCode.CONFLICT, "The book is borrowed")
         }
 
-        if(book.reservations.length > 0){
+        if (book.reservations.length > 0) {
             return failure(stausCode.CONFLICT, "The book has a waiting reservation")
         }
 
@@ -142,3 +146,4 @@ export async function deleteBook(bookId){
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }
+
