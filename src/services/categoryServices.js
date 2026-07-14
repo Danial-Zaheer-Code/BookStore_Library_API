@@ -70,7 +70,7 @@ export async function updateCategory(category) {
             return failure(stausCode.NOT_FOUND, "Category does not exist")
         }
 
-        if(category.data.name && await isCategoryNameTaken(category.data.name)) {
+        if (category.data.name && await isCategoryNameTaken(category.data.name)) {
             return failure(stausCode.CONFLICT, "Category name already taken")
         }
 
@@ -94,7 +94,7 @@ export async function deleteCategory(categoryId) {
             where: { id: categoryId },
             include: { _count: { select: { books: true } } }
         });
-      
+
         if (!category) {
             return failure(stausCode.NOT_FOUND, "Category does not exist")
         }
@@ -108,6 +108,37 @@ export async function deleteCategory(categoryId) {
         })
 
         return success(stausCode.OK, "Category deleted successfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+export async function retrieveCategoryDetails(categoryId, filters) {
+    try {
+        const category = await prisma.category.findUnique({
+            where: {
+                id: categoryId
+            },
+            select: {
+                id: true,
+                name: true,
+                books: {
+                    take: filters.limit,
+                    skip: (filters.page - 1) * filters.limit,
+                    select: {
+                        id: true,
+                        title: true
+                    }
+                }
+            }
+        });
+
+        if(!category){
+            return failure(stausCode.NOT_FOUND, "Category does not found")
+        }
+
+        return success(stausCode.OK, "Retrieved Successfully", {category: category})
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")

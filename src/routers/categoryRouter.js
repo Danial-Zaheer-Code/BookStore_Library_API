@@ -57,3 +57,27 @@ router.get("/list",
     validateToken,
     categoryController.listCategories
 )
+
+router.get("/details",
+    validateToken,
+    body("categoryId")
+    .exists()
+    .withMessage("Category Id is required")
+    .isNumeric()
+    .withMessage("Category Id must be a number")
+    .toInt(),
+    query("page")
+        .optional()
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    query("limit")
+        .optional()
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    validateRequest,
+    categoryController.retrieveCategoryDetails
+)

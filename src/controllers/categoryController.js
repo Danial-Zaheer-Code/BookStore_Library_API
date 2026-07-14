@@ -14,6 +14,17 @@ export async function listCategories(req, res){
     return res.status(result.status).json(result.responseBody)
 }
 
+export async function retrieveCategoryDetails(req, res){
+    const categoryId = req.body.categoryId
+    const filters = req.query
+
+    filters.limit = Number(filters.limit ?? 10)
+    filters.page = Number(filters.page ?? 1)
+
+    const result = await categoryServices.retrieveCategoryDetails(categoryId, filters)
+    return res.status(result.status).json(result.responseBody)
+}
+
 export async function updateCategory(req, res){
     const {categoryId, name} = req.body
     const category = {
