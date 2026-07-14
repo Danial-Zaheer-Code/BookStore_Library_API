@@ -6,3 +6,11 @@ export async function createBook(req, res) {
     const result = await bookServices.createBook(book)
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function retrieveBookDetails(req, res){
+    const {bookId} = req.body;
+
+    const result = await bookServices.retrieveBookDetails(bookId)
+
+    return res.status(result.status).json(result.responseBody)
+}

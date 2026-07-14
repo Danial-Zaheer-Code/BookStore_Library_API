@@ -57,3 +57,17 @@ router.post("/create",
     validateRequest,
     bookController.createBook
 )
+
+router.get("/details",
+    validateToken,
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    bookController.retrieveBookDetails
+)

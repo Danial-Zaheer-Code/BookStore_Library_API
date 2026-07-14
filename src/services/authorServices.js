@@ -117,7 +117,7 @@ export async function deleteAuthor(authorId) {
     }
 }
 
-async function isAuthorExists(authorId) {
+export async function isAuthorExists(authorId) {
     const author = await prisma.author.findUnique({
         where: {
             id: authorId

@@ -41,3 +41,51 @@ async function isISBNTaken(isbn) {
 
     return book != null
 }
+
+export async function retrieveBookDetails(bookId) {
+    try {
+        const book = await prisma.book.findUnique({
+            where: { id: bookId },
+            select: {
+                id: true,
+                title: true,
+                availableCopies: true,
+                totalCopies: true,
+                publishedYear: true,
+                category: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                author: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+
+        if (!book) {
+            return failure(stausCode.NOT_FOUND, "Book does not exists")
+        }
+
+        const reviewStats = await prisma.review.aggregate({
+            where: {
+                bookId: bookId
+            },
+            _avg: {
+                rating: true
+            }
+        })
+
+        book.averageRating = reviewStats._avg.rating ?? 0;
+
+        return success(stausCode.OK, "Retrieved SUccessfully", { book: book })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+
+    }
+}
