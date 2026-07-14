@@ -30,7 +30,13 @@ export async function createBook(book) {
 }
 
 async function isISBNTaken(isbn) {
-    const book = await prisma.book.findUnique({
+    const book = await retrieveBookByISBN(isbn)
+
+    return book != null
+}
+
+async function retrieveBookByISBN(isbn) {
+    return await prisma.book.findUnique({
         where: {
             isbn: isbn
         },
@@ -38,8 +44,6 @@ async function isISBNTaken(isbn) {
             id: true
         }
     })
-
-    return book != null
 }
 
 export async function retrieveBookDetails(bookId) {
@@ -70,8 +74,8 @@ export async function retrieveBookDetails(bookId) {
         if (!book) {
             return failure(stausCode.NOT_FOUND, "Book does not exists")
         }
-        
-        book.averageRating = calculateAverageRating(bookId)
+
+        book.averageRating = await calculateAverageRating(bookId)
 
         return success(stausCode.OK, "Retrieved SUccessfully", { book: book })
     } catch (error) {
