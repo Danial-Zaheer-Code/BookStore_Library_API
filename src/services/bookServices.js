@@ -30,13 +30,7 @@ export async function createBook(book) {
 }
 
 async function isISBNTaken(isbn) {
-    const book = await retrieveBookByISBN(isbn)
-
-    return book != null
-}
-
-async function retrieveBookByISBN(isbn) {
-    return await prisma.book.findUnique({
+    const book = await prisma.book.findUnique({
         where: {
             isbn: isbn
         },
@@ -44,6 +38,8 @@ async function retrieveBookByISBN(isbn) {
             id: true
         }
     })
+
+    return book != null
 }
 
 export async function retrieveBookDetails(bookId) {
