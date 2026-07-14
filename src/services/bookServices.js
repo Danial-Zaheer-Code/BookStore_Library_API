@@ -1,19 +1,20 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
-
+import { isAuthorExists } from "./authorServices.js"
+import { isCategoryExists } from "./categoryServices.js"
 
 export async function createBook(book) {
     try {
-        if(await isISBNTaken(book.isbn)){
+        if (await isISBNTaken(book.isbn)) {
             return failure(stausCode.CONFLICT, "Book with ISBN already exists")
         }
 
-        if(!await isAuthorExists(book.authorId)){
+        if (!await isAuthorExists(book.authorId)) {
             return failure(stausCode.NOT_FOUND, "Author does not exists")
         }
 
-        if(!await isCategoryExists(book.categoryId)){
+        if (!await isCategoryExists(book.categoryId)) {
             return failure(stausCode.NOT_FOUND, "Category does not exists")
         }
 
@@ -39,30 +40,4 @@ async function isISBNTaken(isbn) {
     })
 
     return book != null
-}
-
-async function isAuthorExists(authorId){
-    const author = await prisma.author.findUnique({
-        where: {
-            id: authorId
-        },
-        select:{
-            id: true
-        }
-    })
-
-    return author != null
-}
-
-async function isCategoryExists(categoryId){
-    const category = await prisma.category.findUnique({
-        where: {
-            id: categoryId
-        },
-        select:{
-            id: true
-        }
-    })
-
-    return category != null
 }
