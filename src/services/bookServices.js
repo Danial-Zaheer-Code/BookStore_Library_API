@@ -86,6 +86,59 @@ export async function retrieveBookDetails(bookId) {
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
 
+export async function deleteBook(bookId){
+    try {
+        const book = await prisma.book.findUnique({
+            where: {
+                id: bookId
+            },
+            select: {
+                id: true,
+                borrowRecords: {
+                    where: {
+                        status: "BORROWED"
+                    },
+                    take: 1,
+                    select: {
+                        id: true
+                    }
+                },
+                reservations: {
+                    where: {
+                        status: "WAITING"
+                    },
+                    take: 1,
+                    select: {
+                        id: true
+                    }
+                }
+            },
+        })
+
+        if(!book){
+            return failure(stausCode.NOT_FOUND, "The book does not exists")
+        }
+
+        if(book.borrowRecords.length > 0){
+            return failure(stausCode.CONFLICT, "The book is borrowed")
+        }
+
+        if(book.reservations.length > 0){
+            return failure(stausCode.CONFLICT, "The book has a waiting reservation")
+        }
+
+        await prisma.book.delete({
+            where: {
+                id: bookId
+            }
+        })
+
+        return success(stausCode.OK, "Book deleted successfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
 }

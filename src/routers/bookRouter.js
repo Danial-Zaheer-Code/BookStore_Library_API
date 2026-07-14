@@ -71,3 +71,18 @@ router.get("/details",
     validateRequest,
     bookController.retrieveBookDetails
 )
+
+router.post("/delete",
+    validateToken,
+    isAdmin,
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    bookController.deleteBook
+)
