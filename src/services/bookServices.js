@@ -3,7 +3,7 @@ import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 import { isAuthorExists } from "./authorServices.js"
 import { isCategoryExists } from "./categoryServices.js"
-import {createWhereClauseForBookList} from "../utils/utils.js"
+import { createWhereClauseForBookList } from "../utils/utils.js"
 
 export async function createBook(book) {
     try {
@@ -62,8 +62,6 @@ export async function updateBook(book) {
     }
 }
 
-
-
 async function isISBNTaken(isbn) {
     const book = await retrieveBookByISBN(isbn)
 
@@ -101,6 +99,61 @@ async function calculateAverageRating(bookId) {
     })
 
     return reviewStats._avg.rating ?? 0;
+}
+
+export async function updateStock(adjustment) {
+    try {
+        const book = await prisma.book.findUnique({
+            where: { id: adjustment.bookId },
+            select: {
+                availableCopies: true,
+                totalCopies: true
+            }
+        })
+
+        if (!book) {
+            return failure(stausCode.NOT_FOUND, "Book does not exists")
+        }
+
+        const [newTotalCopies, newAvailableCopies] = calculateNewStock(book, adjustment)
+
+        if (newTotalCopies <= 0) {
+            return failure(stausCode.CONFLICT, "Total Copies Can't be negative")
+        }
+
+        if (newAvailableCopies <= 0) {
+            return failure(stausCode.CONFLICT, "Available Copies Can't be negative")
+        }
+
+        await prisma.book.update({
+            where: { id: adjustment.bookId },
+            data: {
+                availableCopies: newAvailableCopies,
+                totalCopies: newTotalCopies
+            }
+        })
+
+        return success(stausCode.OK, "Stock updated succesfully")
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+function calculateNewStock(book, adjustment){
+    let newTotalCopies = 0
+    let newAvailableCopies = 0
+
+    if (adjustment.operation == '+') {
+        newTotalCopies = book.totalCopies + adjustment.value
+        newAvailableCopies = book.availableCopies + adjustment.value
+    }
+    else {
+        newTotalCopies = book.totalCopies - adjustment.value
+        newAvailableCopies = book.availableCopies - adjustment.value
+    }
+
+    return [newTotalCopies, newAvailableCopies]
 }
 
 export async function deleteBook(bookId) {

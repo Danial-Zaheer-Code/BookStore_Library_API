@@ -102,6 +102,30 @@ router.post("/update",
     bookController.updateBook
 )
 
+router.post("/update-stock",
+    validateToken,
+    isAdmin,
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    body("adjustment")
+        .exists()
+        .withMessage("Adjustment id is required")
+        .notEmpty()
+        .withMessage("Adjustment must not be empty")
+        .custom(value => value[0] == "+" || value[0] == "-")
+        .withMessage("Operation should be '+' or '-'")
+        .custom(value => !isNaN(Number(value.slice(1))))
+        .withMessage("Stock value must be a number"),
+    validateRequest,
+    bookController.updateStock
+)
+
 router.post("/delete",
     validateToken,
     isAdmin,

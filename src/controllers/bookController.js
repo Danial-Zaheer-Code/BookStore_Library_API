@@ -25,6 +25,15 @@ export async function updateBook(req, res) {
     return res.status(result.status).json(result.responseBody)
 }
 
+export async function updateStock(req, res){
+    const {bookId, adjustment} = req.body
+    const operation = adjustment[0]
+    const value = Number(adjustment.slice(1))
+
+    const result = await bookServices.updateStock({bookId, operation, value})
+    return res.status(result.status).json(result.responseBody)
+}
+
 export async function deleteBook(req, res) {
     const { bookId } = req.body;
 
