@@ -1,5 +1,5 @@
 import express from "express"
-import { body, check, query } from "express-validator"
+import { body, query } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken } from "../middleware/tokenValidation.js";
 import { isAdmin } from "../middleware/adminValidation.js";
