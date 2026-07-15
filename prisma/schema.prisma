@@ -76,7 +76,7 @@ model BorrowRecord{
   bookId Int @map("book_id")
   borrowDate DateTime @default(now()) @map("borrow_date")
   dueDate DateTime @map("due_date")
-  returnDate DateTime @map("return_date")
+  returnDate DateTime? @map("return_date")
   status BorrowedStatus @default(BORROWED)
   fineAmount Decimal? @db.Decimal(10, 2) @map("fine_amount") @default(0)
   finePaid Boolean? @map("fine_paid")
