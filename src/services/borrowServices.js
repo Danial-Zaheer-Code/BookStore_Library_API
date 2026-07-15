@@ -1,6 +1,7 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
+import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculator.js"
 
 
 const FINE_PER_DAY = 10
@@ -118,15 +119,6 @@ export async function returnBook(userId, borrowId) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
     }
-}
-
-function calculateFine(borrowRecord) {
-
-    if (borrowRecord.status == "OVERDUE") {
-        return calculateLiveFineEstimate(borrowRecord.dueDate)
-    }
-
-    return 0
 }
 
 export async function retrieveMyBorrowHistory(userId, filters) {
@@ -247,15 +239,6 @@ export async function listOverdueBorrowRecords(filters) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
     }
-}
-
-function calculateLiveFineEstimate(dueDate) {
-    const overdueDays = Math.max(
-        0,
-        Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24))
-    )
-
-    return overdueDays * FINE_PER_DAY
 }
 
 function getSelectClauseForListOverDueBooks() {
