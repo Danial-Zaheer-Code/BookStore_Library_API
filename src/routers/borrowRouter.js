@@ -6,3 +6,17 @@ import { isAdmin } from "../middleware/adminValidation.js";
 import * as borrowController from "../controllers/borrowController.js";
 
 export const router = express.Router()
+
+router.post("/create",
+    validateToken,
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    borrowController.borrowBook
+)
