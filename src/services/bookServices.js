@@ -118,10 +118,10 @@ export async function updateStock(adjustment) {
         const [newTotalCopies, newAvailableCopies] = calculateNewStock(book, adjustment)
 
         if (newTotalCopies <= 0) {
-            return failure(stausCode.CONFLICT, "Total Copies Can't be negative")
+            return failure(stausCode.CONFLICT, "Total Copies Can't be negative or zero")
         }
 
-        if (newAvailableCopies <= 0) {
+        if (newAvailableCopies < 0) {
             return failure(stausCode.CONFLICT, "Available Copies Can't be negative")
         }
 
