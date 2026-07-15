@@ -26,9 +26,7 @@ export async function borrowBook(userId, bookId) {
                 where: {
                     bookId,
                     userId,
-                    status: {
-                        in: ["BORROWED", "OVERDUE"]
-                    }
+                    status: "BORROWED"
                 },
                 select: { id: true }
             })
@@ -74,9 +72,7 @@ export async function returnBook(userId, borrowId) {
                 where: {
                     id: borrowId,
                     userId,
-                    status: {
-                        in: ["BORROWED", "OVERDUE"]
-                    }
+                    status: "BORROWED"
                 },
                 select: { id: true, status: true, dueDate: true, bookId: true }
             })
@@ -106,6 +102,7 @@ export async function returnBook(userId, borrowId) {
             if (fineAmount > 0) {
                 data.fineAmount = fineAmount
                 data.finePaid = false
+                data.status = "OVERDUE"
             }
 
             await tx.borrowRecord.update({
