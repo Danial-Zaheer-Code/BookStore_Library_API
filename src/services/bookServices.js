@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 import { isAuthorExists } from "./authorServices.js"
 import { isCategoryExists } from "./categoryServices.js"
+import {createWhereClauseForBookList} from "../utils/utils.js"
 
 export async function createBook(book) {
     try {
@@ -243,41 +244,4 @@ export async function listBooks(filters) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
-}
-
-function createWhereClauseForBookList(filters) {
-    const where = {}
-
-    if (filters.categoryId) {
-        where.categoryId = Number(filters.categoryId)
-    }
-
-    if (filters.authorId) {
-        where.authorId = Number(filters.authorId)
-    }
-
-    if (filters.availability) {
-        where.availableCopies = {
-            gt: 0
-        }
-    }
-
-    if (filters.yearFrom || filters.yearTo) {
-        where.publishedYear = {}
-        if (filters.yearFrom) {
-            where.publishedYear.gte = Number(filters.yearFrom)
-        }
-        if (filters.yearTo) {
-            where.publishedYear.lte = Number(filters.yearTo)
-        }
-    }
-
-    if (filters.search) {
-        where.title = {
-            contains: filters.search,
-            mode: "insensitive"
-        }
-    }
-
-    return where
 }
