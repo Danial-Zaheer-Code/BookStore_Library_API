@@ -34,3 +34,13 @@ export async function listBorrowRecords(req, res){
     const result = await borrowServices.listBorrowRecords(filters)
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function listOverdueBorrowRecords(req, res){
+    const filters = req.query
+
+    filters.limit = Number(filters.limit)
+    filters.page = Number(filters.page)
+
+    const result = await borrowServices.listOverdueBorrowRecords(filters)
+    return res.status(result.status).json(result.responseBody)
+}

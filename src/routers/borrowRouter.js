@@ -83,3 +83,24 @@ router.get("/list",
     validateRequest,
     borrowController.listBorrowRecords
 )
+
+router.get("/overdue",
+    validateToken,
+    isAdmin,
+    query("page")
+        .exists()
+        .withMessage("Page number is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    query("limit")
+        .exists()
+        .withMessage("Limit is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    validateRequest,
+    borrowController.listOverdueBorrowRecords
+)

@@ -123,12 +123,7 @@ export async function returnBook(userId, borrowId) {
 function calculateFine(borrowRecord) {
 
     if (borrowRecord.status == "OVERDUE") {
-        const overdueDays = Math.max(
-            0,
-            Math.floor((new Date() - borrowRecord.dueDate) / (1000 * 60 * 60 * 24))
-        );
-
-        return overdueDays * FINE_PER_DAY
+        return calculateLiveFineEstimate(borrowRecord.dueDate)
     }
 
     return 0
@@ -183,39 +178,104 @@ export async function listBorrowRecords(filters) {
         }
 
         const records = await prisma.borrowRecord.findMany({
-                where,
-                skip,
-                take: filters.limit,
-                orderBy: {
-                    borrowDate: "desc"
+            where,
+            skip,
+            take: filters.limit,
+            orderBy: {
+                borrowDate: "desc"
+            },
+            select: {
+                id: true,
+                borrowDate: true,
+                dueDate: true,
+                returnDate: true,
+                status: true,
+                fineAmount: true,
+                finePaid: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 },
-                select: {
-                    id: true,
-                    borrowDate: true,
-                    dueDate: true,
-                    returnDate: true,
-                    status: true,
-                    fineAmount: true,
-                    finePaid: true,
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true
-                        }
-                    },
-                    book: {
-                        select: {
-                            id: true,
-                            title: true
-                        }
+                book: {
+                    select: {
+                        id: true,
+                        title: true
                     }
                 }
-            })
+            }
+        })
 
-        return success(stausCode.OK, "Retrieved successfully", {borrowRecords: records,})
+        return success(stausCode.OK, "Retrieved successfully", { borrowRecords: records, })
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
+}
+
+export async function listOverdueBorrowRecords(filters) {
+    try {
+        const skip = (filters.page - 1) * filters.limit
+
+        const where = {
+            status: "BORROWED",
+            dueDate: {
+                lt: new Date()
+            }
+        }
+
+        const select = getSelectClauseForListOverDueBooks()
+
+        const records = await prisma.borrowRecord.findMany({
+            where,
+            skip,
+            take: filters.limit,
+            orderBy: {
+                dueDate: "asc"
+            },
+            select 
+        })
+
+        records.forEach(record => {
+            record.estimateFine = calculateLiveFineEstimate(record.dueDate)
+        })
+
+        return success(stausCode.OK, "Retrieved successfully", { overdueBorrowRecords: records })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
+}
+
+function calculateLiveFineEstimate(dueDate) {
+    const overdueDays = Math.max(
+        0,
+        Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24))
+    )
+
+    return overdueDays * FINE_PER_DAY
+}
+
+function getSelectClauseForListOverDueBooks() {
+    return {
+        id: true,
+        borrowDate: true,
+        dueDate: true,
+        status: true,
+        user: {
+            select: {
+                id: true,
+                name: true,
+                email: true
+            }
+        },
+        book: {
+            select: {
+                id: true,
+                title: true
+            }
+        }
     }
 }
