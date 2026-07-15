@@ -161,7 +161,59 @@ export async function retrieveMyBorrowHistory(userId, filters) {
             }
         })
 
-        return success(stausCode.OK, "Retrieved Successfully", {borrowHistory: history})
+        return success(stausCode.OK, "Retrieved Successfully", { borrowHistory: history })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
+}
+
+export async function listBorrowRecords(filters) {
+    try {
+        const skip = (filters.page - 1) * filters.limit
+
+        const where = {}
+
+        if (filters.status) {
+            where.status = filters.status
+        }
+
+        if (filters.userId) {
+            where.userId = filters.userId
+        }
+
+        const records = await prisma.borrowRecord.findMany({
+                where,
+                skip,
+                take: filters.limit,
+                orderBy: {
+                    borrowDate: "desc"
+                },
+                select: {
+                    id: true,
+                    borrowDate: true,
+                    dueDate: true,
+                    returnDate: true,
+                    status: true,
+                    fineAmount: true,
+                    finePaid: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    },
+                    book: {
+                        select: {
+                            id: true,
+                            title: true
+                        }
+                    }
+                }
+            })
+
+        return success(stausCode.OK, "Retrieved successfully", {borrowRecords: records,})
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")

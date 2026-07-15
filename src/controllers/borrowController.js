@@ -23,3 +23,14 @@ export async function retrieveMyBorrowHistory(req, res){
     return res.status(result.status).json(result.responseBody)
 
 }
+
+export async function listBorrowRecords(req, res){
+    const filters = req.query
+
+    filters.limit = Number(filters.limit)
+    filters.page = Number(filters.page)
+    filters.userId = filters.userId ? Number(filters.userId) : undefined
+
+    const result = await borrowServices.listBorrowRecords(filters)
+    return res.status(result.status).json(result.responseBody)
+}

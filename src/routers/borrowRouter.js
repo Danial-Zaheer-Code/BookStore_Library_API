@@ -54,3 +54,32 @@ router.get("/my-history",
     validateRequest,
     borrowController.retrieveMyBorrowHistory
 )
+
+router.get("/list",
+    validateToken,
+    isAdmin,
+    query("page")
+        .exists()
+        .withMessage("Page number is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    query("limit")
+        .exists()
+        .withMessage("Limit is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    query("userId")
+        .optional()
+        .isNumeric()
+        .withMessage("User id must be a number"),
+    query("status")
+        .optional()
+        .isIn(["BORROWED", "RETURNED", "OVERDUE"])
+        .withMessage("Status must be BORROWED, RETURNED, or OVERDUE"),
+    validateRequest,
+    borrowController.listBorrowRecords
+)
