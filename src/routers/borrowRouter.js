@@ -34,3 +34,23 @@ router.post("/return",
     validateRequest,
     borrowController.returnBook
 )
+
+router.get("/my-history",
+    validateToken,
+    query("page")
+        .exists()
+        .withMessage("Page number is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    query("limit")
+        .exists()
+        .withMessage("Limit is required")
+        .isNumeric()
+        .withMessage("Not a number")
+        .custom(value => value > 0)
+        .withMessage("Page Number must be positive"),
+    validateRequest,
+    borrowController.retrieveMyBorrowHistory
+)

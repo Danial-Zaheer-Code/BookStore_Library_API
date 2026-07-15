@@ -94,7 +94,8 @@ export async function returnBook(userId, borrowId) {
             })
 
             const data = {
-                status: "RETURNED"
+                status: "RETURNED",
+                returnDate: new Date()
             }
 
             const fineAmount = calculateFine(borrowRecord)
@@ -131,4 +132,38 @@ function calculateFine(borrowRecord) {
     }
 
     return 0
+}
+
+export async function retrieveMyBorrowHistory(userId, filters) {
+    try {
+        const history = await prisma.borrowRecord.findMany({
+            take: filters.limit,
+            skip: (filters.page - 1) * filters.limit,
+            where: {
+                userId: userId
+            },
+            select: {
+                id: true,
+                borrowDate: true,
+                dueDate: true,
+                returnDate: true,
+                status: true,
+                fineAmount: true,
+                book: {
+                    select: {
+                        id: true,
+                        title: true
+                    }
+                }
+            },
+            orderBy: {
+                borrowDate: "desc"
+            }
+        })
+
+        return success(stausCode.OK, "Retrieved Successfully", {borrowHistory: history})
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
 }

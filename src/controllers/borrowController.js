@@ -13,3 +13,13 @@ export async function returnBook(req, res){
     const result = await borrowServices.returnBook(req.userId, borrowId)
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function retrieveMyBorrowHistory(req, res){
+    const filters = req.query
+
+    filters.limit = Number(filters.limit)
+    filters.page = Number(filters.page)
+    const result = await borrowServices.retrieveMyBorrowHistory(req.userId, filters)
+    return res.status(result.status).json(result.responseBody)
+
+}
