@@ -2,6 +2,7 @@ import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculator.js"
+import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks } from "../utils/utils.js"
 
 
 const FINE_PER_DAY = 10
@@ -169,6 +170,8 @@ export async function listBorrowRecords(filters) {
             where.userId = filters.userId
         }
 
+        const select = getSelectClauseForListBorrowRecords()
+
         const records = await prisma.borrowRecord.findMany({
             where,
             skip,
@@ -176,28 +179,7 @@ export async function listBorrowRecords(filters) {
             orderBy: {
                 borrowDate: "desc"
             },
-            select: {
-                id: true,
-                borrowDate: true,
-                dueDate: true,
-                returnDate: true,
-                status: true,
-                fineAmount: true,
-                finePaid: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                },
-                book: {
-                    select: {
-                        id: true,
-                        title: true
-                    }
-                }
-            }
+            select
         })
 
         return success(stausCode.OK, "Retrieved successfully", { borrowRecords: records, })
@@ -238,27 +220,5 @@ export async function listOverdueBorrowRecords(filters) {
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
-    }
-}
-
-function getSelectClauseForListOverDueBooks() {
-    return {
-        id: true,
-        borrowDate: true,
-        dueDate: true,
-        status: true,
-        user: {
-            select: {
-                id: true,
-                name: true,
-                email: true
-            }
-        },
-        book: {
-            select: {
-                id: true,
-                title: true
-            }
-        }
     }
 }

@@ -45,3 +45,34 @@ export function createWhereClauseForBookList(filters) {
 
     return where
 }
+
+export function getSelectClauseForListBorrowRecords(){
+    const select = getSelectClauseForListOverDueBooks()
+    select.fineAmount = true
+    select.finePaid = true
+    select.returnDate = true
+
+    return select
+}
+
+export function getSelectClauseForListOverDueBooks() {
+    return {
+        id: true,
+        borrowDate: true,
+        dueDate: true,
+        status: true,
+        user: {
+            select: {
+                id: true,
+                name: true,
+                email: true
+            }
+        },
+        book: {
+            select: {
+                id: true,
+                title: true
+            }
+        }
+    }
+}
