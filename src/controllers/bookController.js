@@ -39,5 +39,14 @@ export async function deleteBook(req, res) {
     const result = await bookServices.deleteBook(bookId)
 
     return res.status(result.status).json(result.responseBody)
+}
 
+export async function listBooks(req, res) {
+    const filters = req.query
+
+    filters.page = Number(filters.page)
+    filters.limit = Number(filters.limit)
+
+    const result = await bookServices.listBooks(filters)
+    return res.status(result.status).json(result.responseBody)
 }

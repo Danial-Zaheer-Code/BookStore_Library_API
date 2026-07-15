@@ -33,7 +33,7 @@ export async function createBook(book) {
 
 export async function updateBook(book) {
     try {
-        if(!await isBookExists(book.id)){
+        if (!await isBookExists(book.id)) {
             return failure(stausCode.NOT_FOUND, "The book does not exists")
         }
 
@@ -45,12 +45,12 @@ export async function updateBook(book) {
             return failure(stausCode.NOT_FOUND, "Category does not exists")
         }
         const existingBook = book.data.isbn ? await retrieveBookByISBN(book.data.isbn) : null
-        if(existingBook && existingBook.id != book.id){
+        if (existingBook && existingBook.id != book.id) {
             return failure(stausCode.CONFLICT, "New ISBN already taken by another book")
         }
 
         await prisma.book.update({
-            where: {id: book.id},
+            where: { id: book.id },
             data: book.data
         })
 
@@ -69,7 +69,7 @@ async function isISBNTaken(isbn) {
     return book != null
 }
 
-async function retrieveBookByISBN(isbn){
+async function retrieveBookByISBN(isbn) {
     return await prisma.book.findUnique({
         where: {
             isbn: isbn
@@ -194,3 +194,90 @@ export async function deleteBook(bookId) {
     }
 }
 
+export async function listBooks(filters) {
+    try {
+        const skip = (filters.page - 1) * filters.limit
+
+        const where = createWhereClauseForBookList(filters)
+
+        const sortFieldMap = {
+            title: "title",
+            publishedYear: "publishedYear",
+            availableCopies: "availableCopies"
+        }
+
+        const sortBy = filters.sortBy ?? "title"
+        const sortOrder = filters.sortOrder ?? "asc"
+
+        const books = await prisma.book.findMany({
+            where,
+            skip,
+            take: filters.limit,
+            orderBy: {
+                [sortBy]: sortOrder
+            },
+            select: {
+                id: true,
+                title: true,
+                isbn: true,
+                totalCopies: true,
+                availableCopies: true,
+                publishedYear: true,
+                author: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+
+        return success(stausCode.OK, "Books retrieved successfully", { books })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+function createWhereClauseForBookList(filters) {
+    const where = {}
+
+    if (filters.categoryId) {
+        where.categoryId = Number(filters.categoryId)
+    }
+
+    if (filters.authorId) {
+        where.authorId = Number(filters.authorId)
+    }
+
+    if (filters.availability) {
+        where.availableCopies = {
+            gt: 0
+        }
+    }
+
+    if (filters.yearFrom || filters.yearTo) {
+        where.publishedYear = {}
+        if (filters.yearFrom) {
+            where.publishedYear.gte = Number(filters.yearFrom)
+        }
+        if (filters.yearTo) {
+            where.publishedYear.lte = Number(filters.yearTo)
+        }
+    }
+
+    if (filters.search) {
+        where.title = {
+            contains: filters.search,
+            mode: "insensitive"
+        }
+    }
+
+    return where
+}
