@@ -2,6 +2,9 @@ import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 
+
+const FINE_PER_DAY = 10
+
 export async function borrowBook(userId, bookId) {
     try {
         return await prisma.$transaction(async (tx) => {
@@ -26,10 +29,11 @@ export async function borrowBook(userId, bookId) {
                     status: {
                         in: ["BORROWED", "OVERDUE"]
                     }
-                }
+                },
+                select: { id: true }
             })
 
-            if(isAlreadyBorrowed){
+            if (isAlreadyBorrowed) {
                 return failure(stausCode.CONFLICT, "Book already borrowed")
             }
 
@@ -38,10 +42,12 @@ export async function borrowBook(userId, bookId) {
 
             await tx.book.update({
                 where: {
-                    id:bookId
+                    id: bookId
                 },
                 data: {
-                    availableCopies: book.availableCopies - 1
+                    availableCopies: {
+                        decrement: 1
+                    }
                 }
             })
 
@@ -59,4 +65,73 @@ export async function borrowBook(userId, bookId) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
     }
+}
+
+export async function returnBook(userId, borrowId) {
+    try {
+        return await prisma.$transaction(async (tx) => {
+            const borrowRecord = await tx.borrowRecord.findUnique({
+                where: {
+                    id: borrowId,
+                    userId,
+                    status: {
+                        in: ["BORROWED", "OVERDUE"]
+                    }
+                },
+                select: { id: true, status: true, dueDate: true, bookId: true }
+            })
+
+            if (!borrowRecord) {
+                return failure(stausCode.CONFLICT, "You have not borrowed this book")
+            }
+
+
+            await tx.book.update({
+                where: {
+                    id: borrowRecord.bookId
+                },
+                data: {
+                    availableCopies: {
+                        increment: 1
+                    }
+                }
+            })
+
+            const data = {
+                status: "RETURNED"
+            }
+
+            const fineAmount = calculateFine(borrowRecord)
+
+            if (fineAmount > 0) {
+                data.fineAmount = fineAmount
+                data.finePaid = false
+            }
+
+            await tx.borrowRecord.update({
+                where: { id: borrowRecord.id },
+                data: data
+            })
+
+            return success(stausCode.OK, "Book Returned Successfully")
+
+        })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
+}
+
+function calculateFine(borrowRecord) {
+
+    if (borrowRecord.status == "OVERDUE") {
+        const overdueDays = Math.max(
+            0,
+            Math.floor((new Date() - borrowRecord.dueDate) / (1000 * 60 * 60 * 24))
+        );
+
+        return overdueDays * FINE_PER_DAY
+    }
+
+    return 0
 }

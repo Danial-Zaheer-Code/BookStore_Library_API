@@ -20,3 +20,17 @@ router.post("/create",
     validateRequest,
     borrowController.borrowBook
 )
+
+router.post("/return",
+    validateToken,
+    body("borrowId")
+        .exists()
+        .withMessage("Borrow id is required")
+        .isNumeric()
+        .withMessage("Borrow id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    borrowController.returnBook
+)
