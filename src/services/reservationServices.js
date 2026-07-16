@@ -1,14 +1,12 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
+import { retrieveBookWithAvailableCopies } from "../utils/transactionUtils.js"
 
 export async function reserveBook(userId, bookId) {
     try {
         return await prisma.$transaction(async (tx) => {
-            const book = await tx.book.findUnique({
-                where: { id: bookId },
-                select: { availableCopies: true }
-            })
+            const book = await retrieveBookWithAvailableCopies(tx, bookId)
 
             if (!book) {
                 return failure(stausCode.NOT_FOUND, "The book does not exists")
@@ -18,32 +16,11 @@ export async function reserveBook(userId, bookId) {
                 return failure(stausCode.CONFLICT, "Book is available for borrowing.")
             }
 
-            const alreadyReserved = await tx.reservation.findFirst({
-                where: {
-                    userId,
-                    bookId,
-                    status: "WAITING"
-                }
-            })
-
-            if(alreadyReserved){
+            if (await isAlreadyReserved(tx, userId, bookId)) {
                 return failure(stausCode.CONFLICT, "You had already reserved this book")
             }
 
-            const lastReserved = await tx.reservation.findFirst({
-                where: {
-                    status: "WAITING",
-                    bookId: bookId
-                },
-                select: {
-                    queuePosition: true
-                },
-                orderBy: {
-                    queuePosition: "desc"
-                }
-            })
-
-            const nextQueuePostion = lastReserved ? lastReserved.queuePosition + 1 : 1
+            const nextQueuePostion = await calculateNextQueuePosition(tx, bookId)
 
             await tx.reservation.create({
                 data: {
@@ -59,4 +36,33 @@ export async function reserveBook(userId, bookId) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }
+}
+
+async function isAlreadyReserved(transactionClient, userId, bookId) {
+    const reservation = await transactionClient.reservation.findFirst({
+        where: {
+            userId,
+            bookId,
+            status: "WAITING"
+        }
+    })
+
+    return reservation != null;
+}
+
+async function calculateNextQueuePosition(transactionClient, bookId) {
+    const lastReserved = await transactionClient.reservation.findFirst({
+        where: {
+            status: "WAITING",
+            bookId: bookId
+        },
+        select: {
+            queuePosition: true
+        },
+        orderBy: {
+            queuePosition: "desc"
+        }
+    })
+
+    return lastReserved ? lastReserved.queuePosition + 1 : 1
 }
