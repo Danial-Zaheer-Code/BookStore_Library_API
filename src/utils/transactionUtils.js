@@ -28,7 +28,7 @@ export async function borrowBookIfReservation(transactionClient, bookId) {
     if (!nextReservation) {
         await transactionClient.book.update({
             where: {
-                id: borrowRecord.bookId
+                id: bookId
             },
             data: {
                 availableCopies: {
