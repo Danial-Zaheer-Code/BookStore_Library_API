@@ -2,8 +2,8 @@ import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculator.js"
-import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks } from "../utils/utils.js"
-import { retrieveBookWithAvailableCopies } from "../utils/transactionUtils.js"
+import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks, calculateDueDate } from "../utils/utils.js"
+import { retrieveBookWithAvailableCopies, borrowBookIfReservation } from "../utils/transactionUtils.js"
 
 export async function borrowBook(userId, bookId) {
     try {
@@ -64,17 +64,10 @@ async function isAlreadyBorrowed(tx, userId, bookId) {
     return borrowRecord != null
 }
 
-function calculateDueDate() {
-    const dueDate = new Date()
-    dueDate.setDate(dueDate.getDate() + 14)
-
-    return dueDate
-}
-
 export async function returnBook(userId, borrowId) {
     try {
         return await prisma.$transaction(async (tx) => {
-            const borrowRecord = await tx.borrowRecord.findUnique({
+            const borrowRecord = await tx.borrowRecord.findFirst({
                 where: {
                     id: borrowId,
                     userId,
@@ -84,26 +77,17 @@ export async function returnBook(userId, borrowId) {
             })
 
             if (!borrowRecord) {
-                return failure(stausCode.CONFLICT, "You have not borrowed this book")
+                return failure(stausCode.NOT_FOUND, "You have no such borrow record")
             }
 
             const data = createBorrowRecordUpdateData(borrowRecord)
-
-            await tx.book.update({
-                where: {
-                    id: borrowRecord.bookId
-                },
-                data: {
-                    availableCopies: {
-                        increment: 1
-                    }
-                }
-            })
 
             await tx.borrowRecord.update({
                 where: { id: borrowRecord.id },
                 data: data
             })
+
+            await borrowBookIfReservation(tx, borrowRecord.bookId)
 
             return success(stausCode.OK, "Book Returned Successfully")
         })

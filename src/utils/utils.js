@@ -76,3 +76,10 @@ export function getSelectClauseForListOverDueBooks() {
         }
     }
 }
+
+export function calculateDueDate() {
+    const dueDate = new Date()
+    dueDate.setDate(dueDate.getDate() + 14)
+
+    return dueDate
+}
