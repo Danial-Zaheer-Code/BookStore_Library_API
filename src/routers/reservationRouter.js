@@ -20,3 +20,17 @@ router.post("/create",
     validateRequest,
     reservationController.reserveBook
 )
+
+router.post("/cancel",
+    validateToken,
+    body("reservationId")
+        .exists()
+        .withMessage("Reservation id is required")
+        .isNumeric()
+        .withMessage("Reservation id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Reservation id must be positive"),
+    validateRequest,
+    reservationController.cancelReservation
+)
