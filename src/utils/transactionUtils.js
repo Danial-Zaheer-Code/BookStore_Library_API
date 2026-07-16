@@ -6,22 +6,6 @@ export async function retrieveBookWithAvailableCopies(transactionClient, bookId)
     })
 }
 
-export async function updateQueuePosititons(transactionClient, reservedRecord) {
-    await transactionClient.reservation.updateMany({
-        where: {
-            queuePosition: {
-                gt: reservedRecord.queuePosition
-            },
-            bookId: reservedRecord.bookId
-        },
-        data: {
-            queuePosition: {
-                decrement: 1
-            }
-        }
-    })
-}
-
 export async function borrowBookIfReservation(transactionClient, bookId) {
     const nextReservation = await retreiveNextReservation(transactionClient, bookId)
 
@@ -58,6 +42,22 @@ export async function borrowBookIfReservation(transactionClient, bookId) {
             bookId: nextReservation.bookId,
             userId: nextReservation.userId,
             dueDate
+        }
+    })
+}
+
+export async function updateQueuePosititons(transactionClient, reservedRecord) {
+    await transactionClient.reservation.updateMany({
+        where: {
+            queuePosition: {
+                gt: reservedRecord.queuePosition
+            },
+            bookId: reservedRecord.bookId
+        },
+        data: {
+            queuePosition: {
+                decrement: 1
+            }
         }
     })
 }
