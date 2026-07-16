@@ -5,3 +5,9 @@ import { isAdmin } from "../middleware/adminValidation.js";
 import * as adminDashboardController from "../controllers/adminDashboardController.js";
 
 export const router = express.Router();
+
+router.get("/stats",
+	validateToken,
+	isAdmin,
+	adminDashboardController.retrieveStats
+)
