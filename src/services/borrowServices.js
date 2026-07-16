@@ -3,18 +3,14 @@ import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
 import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculator.js"
 import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks } from "../utils/utils.js"
-
+import { retrieveBookWithAvailableCopies } from "../utils/transactionUtils.js"
 
 const FINE_PER_DAY = 10
 
 export async function borrowBook(userId, bookId) {
     try {
         return await prisma.$transaction(async (tx) => {
-            const book = await tx.book.findUnique({
-                where: { id: bookId },
-                select: { availableCopies: true }
-            })
-
+            const book = await retrieveBookWithAvailableCopies(tx, bookId)
 
             if (!book) {
                 return failure(stausCode.NOT_FOUND, "The book does not exists")
@@ -24,21 +20,11 @@ export async function borrowBook(userId, bookId) {
                 return failure(stausCode.CONFLICT, "Not available")
             }
 
-            const isAlreadyBorrowed = await tx.borrowRecord.findFirst({
-                where: {
-                    bookId,
-                    userId,
-                    status: "BORROWED"
-                },
-                select: { id: true }
-            })
-
-            if (isAlreadyBorrowed) {
+            if (await isAlreadyBorrowed(tx, userId, bookId)) {
                 return failure(stausCode.CONFLICT, "Book already borrowed")
             }
 
-            const dueDate = new Date()
-            dueDate.setDate(dueDate.getDate() + 14)
+            const dueDate = calculateDueDate()
 
             await tx.book.update({
                 where: {
@@ -67,6 +53,26 @@ export async function borrowBook(userId, bookId) {
     }
 }
 
+async function isAlreadyBorrowed(tx, userId, bookId) {
+    const borrowRecord = await tx.borrowRecord.findFirst({
+        where: {
+            bookId,
+            userId,
+            status: "BORROWED"
+        },
+        select: { id: true }
+    })
+
+    return borrowRecord != null
+}
+
+function calculateDueDate() {
+    const dueDate = new Date()
+    dueDate.setDate(dueDate.getDate() + 14)
+
+    return dueDate
+}
+
 export async function returnBook(userId, borrowId) {
     try {
         return await prisma.$transaction(async (tx) => {
@@ -83,6 +89,7 @@ export async function returnBook(userId, borrowId) {
                 return failure(stausCode.CONFLICT, "You have not borrowed this book")
             }
 
+            const data = createBorrowRecordUpdateData(borrowRecord)
 
             await tx.book.update({
                 where: {
@@ -95,31 +102,34 @@ export async function returnBook(userId, borrowId) {
                 }
             })
 
-            const data = {
-                status: "RETURNED",
-                returnDate: new Date()
-            }
-
-            const fineAmount = calculateFine(borrowRecord)
-
-            if (fineAmount > 0) {
-                data.fineAmount = fineAmount
-                data.finePaid = false
-                data.status = "OVERDUE"
-            }
-
             await tx.borrowRecord.update({
                 where: { id: borrowRecord.id },
                 data: data
             })
 
             return success(stausCode.OK, "Book Returned Successfully")
-
         })
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
     }
+}
+
+function createBorrowRecordUpdateData(borrowRecord) {
+    const data = {
+        status: "RETURNED",
+        returnDate: new Date()
+    }
+
+    const fineAmount = calculateFine(borrowRecord)
+
+    if (fineAmount > 0) {
+        data.fineAmount = fineAmount
+        data.finePaid = false
+        data.status = "OVERDUE"
+    }
+
+    return data
 }
 
 export async function retrieveMyBorrowHistory(userId, filters) {
@@ -209,7 +219,7 @@ export async function listOverdueBorrowRecords(filters) {
             orderBy: {
                 dueDate: "asc"
             },
-            select 
+            select
         })
 
         records.forEach(record => {
