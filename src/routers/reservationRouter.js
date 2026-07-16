@@ -34,3 +34,8 @@ router.post("/cancel",
     validateRequest,
     reservationController.cancelReservation
 )
+
+router.get("/my-reservations",
+    validateToken,
+    reservationController.listMyReservation
+)

@@ -102,7 +102,38 @@ export async function cancelReservation(userId, reservationId) {
     } catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
-
     }
 }
 
+export async function listMyReservation(userId) {
+    try {
+        const reservations = await prisma.reservation.findMany({
+            where: {
+                userId
+            },
+            select: {
+                id: true,
+                status: true,
+                queuePosition: true,
+                book: {
+                    select: {
+                        id: true,
+                        title: true
+                    }
+                }
+            }, orderBy: [
+                {
+                    createdAt: "desc"
+                },
+                {
+                    queuePosition: "asc"
+                }
+            ]
+        })
+
+        return success(stausCode.OK, "Retrieved Successfully", { reservations: reservations })
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}

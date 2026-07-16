@@ -13,3 +13,8 @@ export async function cancelReservation(req, res){
     const result =  await reservationServices.cancelReservation(req.userId, reservationId)
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function listMyReservation(req, res){
+    const result = await reservationServices.listMyReservation(req.userId)
+    return res.status(result.status).json(result.responseBody)
+}
