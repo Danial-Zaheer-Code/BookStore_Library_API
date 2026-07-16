@@ -1,3 +1,5 @@
+const FINE_PER_DAY = 10
+
 export function calculateFine(borrowRecord) {
 
     if (borrowRecord.status == "OVERDUE") {

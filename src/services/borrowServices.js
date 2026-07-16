@@ -5,8 +5,6 @@ import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculato
 import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks } from "../utils/utils.js"
 import { retrieveBookWithAvailableCopies } from "../utils/transactionUtils.js"
 
-const FINE_PER_DAY = 10
-
 export async function borrowBook(userId, bookId) {
     try {
         return await prisma.$transaction(async (tx) => {
