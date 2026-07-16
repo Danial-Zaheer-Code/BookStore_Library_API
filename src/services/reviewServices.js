@@ -8,7 +8,7 @@ export async function createReview(data) {
             return failure(stausCode.NOT_FOUND, "Book does not exists")
         }
 
-        if(!await isEverBorrowed(prisma, data.userId, data.bookId)){
+        if(!await isEverBorrowed(data.userId, data.bookId)){
             return failure(stausCode.FORBIDDEN, "You can only review books that you have borrowed.")
         }
 
@@ -43,8 +43,8 @@ export async function createReview(data) {
     }
 }
 
-async function  isEverBorrowed(transactionClient, userId, bookId) {
-    const borrowRecord = await transactionClient.borrowRecord.findFirst({
+async function  isEverBorrowed(userId, bookId) {
+    const borrowRecord = await prisma.borrowRecord.findFirst({
         where: {
             userId,
             bookId,
@@ -52,4 +52,28 @@ async function  isEverBorrowed(transactionClient, userId, bookId) {
     })
 
     return borrowRecord !== null
+}
+
+export async function retrieveBookReviews(bookId) {
+    try {
+        const reviews = await prisma.review.findMany({
+            where: {
+                bookId
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+        
+
+        return success(stausCode.OK, "Reviews retrieved successfully", reviews)
+    } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
 }

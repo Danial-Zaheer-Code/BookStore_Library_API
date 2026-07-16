@@ -34,3 +34,16 @@ router.post("/create",
     validateRequest,
     reviewController.createReview
 );
+
+router.get("/by-book",
+    body("bookId")
+        .exists()
+        .withMessage("Book id is required")
+        .isNumeric()
+        .withMessage("Book id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    reviewController.retrieveBookReviews
+);
