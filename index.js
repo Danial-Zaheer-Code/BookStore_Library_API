@@ -9,6 +9,7 @@ import {router as categoryRouter} from "./src/routers/categoryRouter.js"
 import {router as bookRouter} from "./src/routers/bookRouter.js"
 import {router as borrowRouter} from "./src/routers/borrowRouter.js"
 import { router as reservationRouter } from "./src/routers/reservationRouter.js";
+import { router as reviewRouter } from "./src/routers/reviewRouter.js";
 const app = express();
 const upload = multer();
 
@@ -20,6 +21,7 @@ app.use("/api/categories", categoryRouter)
 app.use("/api/books", bookRouter)
 app.use("/api/borrow", borrowRouter)
 app.use("/api/reservations", reservationRouter)
+app.use("/api/reviews", reviewRouter)
 app.listen(process.env.PORT, () => {
 	console.log(`Example app listening on port ${process.env.PORT}`)
 })

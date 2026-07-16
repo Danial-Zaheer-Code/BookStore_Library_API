@@ -2,7 +2,7 @@ import express from "express"
 import { body, query } from "express-validator"
 import { validateRequest } from "../middleware/requestValidation.js";
 import { validateToken } from "../middleware/tokenValidation.js";
-import * as reservationController from "../controllers/reservationController.js"
+import * as reviewController from "../controllers/reviewController.js"
 
 export const router = express.Router()
 
@@ -16,25 +16,21 @@ router.post("/create",
         .toInt()
         .custom(value => value > 0)
         .withMessage("Book id must be positive"),
-    validateRequest,
-    reservationController.reserveBook
-)
-
-router.post("/cancel",
-    validateToken,
-    body("reservationId")
+    body("rating")
         .exists()
-        .withMessage("Reservation id is required")
+        .withMessage("Rating is required")
         .isNumeric()
-        .withMessage("Reservation id must be a number")
+        .withMessage("Rating must be a number")
         .toInt()
-        .custom(value => value > 0)
-        .withMessage("Reservation id must be positive"),
+        .custom(value => value >= 1 && value <= 5)
+        .withMessage("Rating must be between 1 and 5"),
+    body("comment")
+        .optional()
+        .isString()
+        .withMessage("Comment must be a string")
+        .isLength({ max: 200 })
+        .withMessage("Comment must be at most 200 characters")
+        .escape(),
     validateRequest,
-    reservationController.cancelReservation
-)
-
-router.get("/my-reservations",
-    validateToken,
-    reservationController.listMyReservation
-)
+    reviewController.createReview
+);

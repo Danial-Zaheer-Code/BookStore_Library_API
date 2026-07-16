@@ -79,7 +79,7 @@ async function retrieveBookByISBN(isbn) {
     })
 }
 
-async function isBookExists(bookId) {
+export async function isBookExists(bookId) {
     const book = await prisma.book.findUnique({
         where: { id: bookId },
         select: { id: true }
