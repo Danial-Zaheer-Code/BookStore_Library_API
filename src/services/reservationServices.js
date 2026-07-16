@@ -1,17 +1,34 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
-import { retrieveBookWithAvailableCopies } from "../utils/transactionUtils.js"
-import { borrowBook } from "./borrowServices.js"
 import { updateQueuePosititons } from "../utils/transactionUtils.js"
 
 export async function reserveBook(userId, bookId) {
     try {
         return await prisma.$transaction(async (tx) => {
-            const book = await retrieveBookWithAvailableCopies(tx, bookId)
+            const book = await tx.book.findFirst({
+                where: {id: bookId},
+                select: {
+                    availableCopies: true,
+                    borrowRecords: {
+                        where: {
+                            status: "BORROWED",
+                            userId
+                        },
+                        select:{
+                            id: true
+                        },
+                        take: 1
+                    }
+                }
+            })
 
             if (!book) {
                 return failure(stausCode.NOT_FOUND, "The book does not exists")
+            }
+
+            if(book.borrowRecords.length > 0){
+                return failure(stausCode.CONFLICT, "You are already borrowing this book")
             }
 
             if (book.availableCopies > 0) {
