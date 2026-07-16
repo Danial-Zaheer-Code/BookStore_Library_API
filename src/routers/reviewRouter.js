@@ -47,3 +47,17 @@ router.get("/by-book",
     validateRequest,
     reviewController.retrieveBookReviews
 );
+
+router.post("/delete",
+    validateToken,
+    body("reviewId")
+        .exists()
+        .withMessage("Review id is required")
+        .isNumeric()
+        .withMessage("Review id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Review id must be positive"),
+    validateRequest,
+    reviewController.deleteReview
+);

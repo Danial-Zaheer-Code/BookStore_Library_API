@@ -1,14 +1,14 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
-import {isBookExists} from "./bookServices.js"
+import { isBookExists } from "./bookServices.js"
 export async function createReview(data) {
     try {
-        if(!await isBookExists(data.bookId)){
+        if (!await isBookExists(data.bookId)) {
             return failure(stausCode.NOT_FOUND, "Book does not exists")
         }
 
-        if(!await isEverBorrowed(data.userId, data.bookId)){
+        if (!await isEverBorrowed(data.userId, data.bookId)) {
             return failure(stausCode.FORBIDDEN, "You can only review books that you have borrowed.")
         }
 
@@ -19,7 +19,7 @@ export async function createReview(data) {
             }
         })
 
-        if(existingReview){
+        if (existingReview) {
             await prisma.review.update({
                 where: {
                     id: existingReview.id
@@ -43,7 +43,7 @@ export async function createReview(data) {
     }
 }
 
-async function  isEverBorrowed(userId, bookId) {
+async function isEverBorrowed(userId, bookId) {
     const borrowRecord = await prisma.borrowRecord.findFirst({
         where: {
             userId,
@@ -69,10 +69,43 @@ export async function retrieveBookReviews(bookId) {
                 }
             }
         })
-        
+
 
         return success(stausCode.OK, "Reviews retrieved successfully", reviews)
     } catch (error) {
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
+    }
+}
+
+export async function deleteReview(reviewId, userId, isAdmin) {
+    try {
+        const review = await prisma.review.findUnique({
+            where: {
+                id: reviewId
+            },
+            select: {
+                userId: true
+            }
+        })
+
+        if (!review) {
+            return failure(stausCode.NOT_FOUND, "Review not found")
+        }
+
+        if (review.userId !== userId && !isAdmin) {
+            return failure(stausCode.FORBIDDEN, "You are not the owner of this review")
+        }
+
+        await prisma.review.delete({
+            where: {
+                id: reviewId
+            }
+        })
+
+        return success(stausCode.OK, "Review deleted successfully")
+    }
+    catch (error) {
         console.log(error)
         return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later.")
     }

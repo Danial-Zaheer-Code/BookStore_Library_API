@@ -19,3 +19,12 @@ export async function retrieveBookReviews(req, res) {
     const result = await reviewServices.retrieveBookReviews(bookId);
     return res.status(result.status).json(result.responseBody)
 }
+
+export async function deleteReview(req, res) {
+    const { reviewId } = req.body;
+    const userId = req.userId;
+    const isAdmin = req.isAdmin;
+
+    const result = await reviewServices.deleteReview(reviewId, userId, isAdmin);
+    return res.status(result.status).json(result.responseBody)
+}
