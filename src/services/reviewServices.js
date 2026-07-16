@@ -29,6 +29,8 @@ export async function createReview(data) {
                     comment: data.comment
                 }
             })
+
+            return success(stausCode.OK, "Review updated successfully")
         }
 
         await prisma.review.create({
