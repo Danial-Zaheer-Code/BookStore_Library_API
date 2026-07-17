@@ -1,15 +1,6 @@
 const FINE_PER_DAY = 10
 
-export function calculateFine(borrowRecord) {
-
-    if (borrowRecord.status == "OVERDUE") {
-        return calculateLiveFineEstimate(borrowRecord.dueDate)
-    }
-
-    return 0
-}
-
-export function calculateLiveFineEstimate(dueDate) {
+export function calculateFine(dueDate) {
     const overdueDays = Math.max(
         0,
         Math.ceil((new Date() - dueDate) / (1000 * 60 * 60 * 24))

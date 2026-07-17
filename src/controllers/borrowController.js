@@ -14,6 +14,13 @@ export async function returnBook(req, res){
     return res.status(result.status).json(result.responseBody)
 }
 
+export async function payFine(req, res){
+    const {borrowId} = req.body;
+
+    const result = await borrowServices.payFine(req.userId, borrowId)
+    return res.status(result.status).json(result.responseBody)
+}
+
 export async function retrieveMyBorrowHistory(req, res){
     const filters = req.query
 

@@ -1,7 +1,7 @@
 import * as stausCode from "../utils/statusCodes.js"
 import { prisma } from "../lib/prisma.js"
 import { success, failure } from "../utils/result.js"
-import { calculateFine, calculateLiveFineEstimate } from "../utils/fineCalculator.js"
+import { calculateFine } from "../utils/fineCalculator.js"
 import { getSelectClauseForListBorrowRecords, getSelectClauseForListOverDueBooks, calculateDueDate } from "../utils/utils.js"
 import { retrieveBookWithAvailableCopies, borrowBookIfReservation } from "../utils/transactionUtils.js"
 
@@ -103,7 +103,7 @@ function createBorrowRecordUpdateData(borrowRecord) {
         returnDate: new Date()
     }
 
-    const fineAmount = calculateFine(borrowRecord)
+    const fineAmount = calculateFine(borrowRecord.dueDate)
 
     if (fineAmount > 0) {
         data.fineAmount = fineAmount
@@ -112,6 +112,34 @@ function createBorrowRecordUpdateData(borrowRecord) {
     }
 
     return data
+}
+
+export async function payFine(userId, borrowId) {
+    try{
+        const borrowRecord = await prisma.borrowRecord.findFirst({
+            where: {
+                id: borrowId,
+                userId,
+                status: "OVERDUE",
+                finePaid: false
+            },
+            select: { id: true, fineAmount: true }
+        })
+
+        if (!borrowRecord) {
+            return failure(stausCode.NOT_FOUND, "No overdue book found")
+        }
+
+        await prisma.borrowRecord.update({
+            where: { id: borrowId },
+            data: { finePaid: true, status: "RETURNED" }
+        })
+
+        return success(stausCode.OK, "Fine paid successfully")
+    }catch(error){
+        console.log(error)
+        return failure(stausCode.INTERNAL_SERVER_ERROR, "Something went wrong. Try again later")
+    }
 }
 
 export async function retrieveMyBorrowHistory(userId, filters) {
@@ -205,7 +233,7 @@ export async function listOverdueBorrowRecords(filters) {
         })
 
         records.forEach(record => {
-            record.estimateFine = calculateLiveFineEstimate(record.dueDate)
+            record.estimateFine = calculateFine(record.dueDate)
         })
 
         return success(stausCode.OK, "Retrieved successfully", { overdueBorrowRecords: records })

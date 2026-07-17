@@ -35,6 +35,20 @@ router.post("/return",
     borrowController.returnBook
 )
 
+router.post("/pay-fine",
+    validateToken,
+    body("borrowId")
+        .exists()
+        .withMessage("Borrow id is required")
+        .isNumeric()
+        .withMessage("Borrow id must be a number")
+        .toInt()
+        .custom(value => value > 0)
+        .withMessage("Book id must be positive"),
+    validateRequest,
+    borrowController.payFine
+)
+
 router.get("/my-history",
     validateToken,
     query("page")
