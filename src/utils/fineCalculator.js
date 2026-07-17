@@ -12,7 +12,7 @@ export function calculateFine(borrowRecord) {
 export function calculateLiveFineEstimate(dueDate) {
     const overdueDays = Math.max(
         0,
-        Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24))
+        Math.ceil((new Date() - dueDate) / (1000 * 60 * 60 * 24))
     )
 
     return overdueDays * FINE_PER_DAY
